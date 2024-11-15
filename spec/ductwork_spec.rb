@@ -2,6 +2,6 @@
 
 RSpec.describe Ductwork do
   it "has a version number" do
-    expect(Ductwork::VERSION).not_to be nil
+    expect(Ductwork::VERSION).not_to be_nil
   end
 end
