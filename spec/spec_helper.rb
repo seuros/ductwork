@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "debug"
+
 require "ductwork"
 
 RSpec.configure do |config|
@@ -8,5 +10,9 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before do
+    Ductwork.reset!
   end
 end

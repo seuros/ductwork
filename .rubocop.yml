@@ -9,6 +9,27 @@ AllCops:
 Gemspec/RequireMFA:
   Enabled: false
 
+Lint/EmptyClass:
+  AllowComments: true
+
+Naming/MemoizedInstanceVariableName:
+  EnforcedStyleForLeadingUnderscores: required
+
+RSpec/ExampleLength:
+  Max: 35
+
+RSpec/MultipleExpectations:
+  Max: 10
+
+Style/Documentation:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
