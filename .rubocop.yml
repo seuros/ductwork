@@ -12,6 +12,9 @@ Gemspec/RequireMFA:
 Lint/EmptyClass:
   AllowComments: true
 
+Metrics/MethodLength:
+  Max: 30
+
 Naming/MemoizedInstanceVariableName:
   EnforcedStyleForLeadingUnderscores: required
 
@@ -22,6 +25,9 @@ RSpec/MultipleExpectations:
   Max: 10
 
 Style/Documentation:
+  Enabled: false
+
+Style/GuardClause:
   Enabled: false
 
 Style/IfUnlessModifier:

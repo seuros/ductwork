@@ -1,0 +1,11 @@
+Description:
+    Installs necessary ductwork files
+
+Example:
+    bin/rails generate ductwork:install
+
+    This will perform the following:
+        Adds migrations
+        Adds default configurations
+        Installs bin/ductwork binstub to start the supervisor
+

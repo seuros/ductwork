@@ -1,0 +1,12 @@
+default: &default
+  workers:
+    - pipelines: "*"
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
