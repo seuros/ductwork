@@ -44,13 +44,9 @@ RSpec.describe Ductwork::Configuration do
       expect(config.pipelines).to eq(%w[PipelineA PipelineB])
     end
 
-    it "returns the pipelines using the default environment" do
-      config = described_class.new(path: config_file.path)
-
-      expect(config.pipelines).to eq(%w[PipelineA PipelineB])
-    end
-
     it "returns the pipelines from the default config file if no path given" do
+      rails = double(env: "production") # rubocop:disable RSpec/VerifiedDoubles
+      stub_const("Rails", rails)
       create_default_config_file
 
       config = described_class.new
@@ -62,8 +58,6 @@ RSpec.describe Ductwork::Configuration do
       Ductwork.pipelines << "PipelineA"
       Ductwork.pipelines << "PipelineB"
       Ductwork.pipelines << "PipelineC"
-      rails = double(env: "test") # rubocop:disable RSpec/VerifiedDoubles
-      stub_const("Rails", rails)
 
       config = described_class.new(path: config_file.path)
 

@@ -1,6 +1,7 @@
 require:
   - rubocop-rake
   - rubocop-rspec
+  - rubocop-rspec_rails
 
 AllCops:
   NewCops: enable
@@ -23,6 +24,10 @@ RSpec/ExampleLength:
 
 RSpec/MultipleExpectations:
   Max: 10
+
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - spec/ductwork/models/**/*.rb
 
 Style/Documentation:
   Enabled: false
