@@ -22,7 +22,7 @@ module Ductwork
 
         @pipeline_definition = builder.complete
 
-        Ductwork.pipelines << to_s
+        Ductwork.pipelines << name.to_s
       end
     end
 

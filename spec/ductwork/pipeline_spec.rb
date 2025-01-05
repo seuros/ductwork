@@ -2,9 +2,13 @@
 
 RSpec.describe Ductwork::Pipeline do
   describe ".define" do
-    let(:klass) do
+    subject(:klass) do
       Class.new do
         include Ductwork::Pipeline
+
+        def self.name
+          "MyPipeline"
+        end
       end
     end
 
@@ -55,7 +59,7 @@ RSpec.describe Ductwork::Pipeline do
           pipeline.start(spy)
         end
       end.to change(Ductwork.pipelines, :count).by(1)
-      expect(Ductwork.pipelines).to eq([klass.to_s])
+      expect(Ductwork.pipelines).to eq(["MyPipeline"])
     end
   end
 end
