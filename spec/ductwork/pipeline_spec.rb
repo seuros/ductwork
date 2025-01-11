@@ -63,20 +63,9 @@ RSpec.describe Ductwork::Pipeline do
 
   describe ".trigger" do
     subject(:klass) do
-      job_class1 = Class.new do
-        def self.name
-          "MyFirstJob"
-        end
-      end
-      job_class2 = Class.new do
-        def self.name
-          "MySecondJob"
-        end
-      end
-
       Class.new(described_class) do
         define do |pipeline|
-          pipeline.start(job_class1).chain(job_class2)
+          pipeline.start(MyFirstJob).chain(MySecondJob)
         end
 
         def self.name

@@ -5,17 +5,11 @@ RSpec.describe Ductwork::DefinitionBuilder do
     let(:builder) { described_class.new }
 
     it "adds the initial step to the definition" do
-      klass = Class.new do
-        def self.name
-          "MyJob"
-        end
-      end
-
-      definition = builder.start(klass).complete
+      definition = builder.start(MyFirstJob).complete
 
       step = definition.steps.first
       expect(definition.steps.length).to eq(1)
-      expect(step.klass).to eq("MyJob")
+      expect(step.klass).to eq("MyFirstJob")
       expect(step.type).to eq(:start)
     end
 
@@ -42,17 +36,11 @@ RSpec.describe Ductwork::DefinitionBuilder do
     end
 
     it "adds a step to the definition" do
-      klass = Class.new do
-        def self.name
-          "MyJob"
-        end
-      end
-
-      definition = builder.start(klass).chain(klass).complete
+      definition = builder.start(MyFirstJob).chain(MySecondJob).complete
 
       step = definition.steps.last
       expect(definition.steps.length).to eq(2)
-      expect(step.klass).to eq("MyJob")
+      expect(step.klass).to eq("MySecondJob")
       expect(step.type).to eq(:chain)
     end
   end
@@ -70,17 +58,11 @@ RSpec.describe Ductwork::DefinitionBuilder do
     end
 
     it "adds a step to the definition" do
-      klass = Class.new do
-        def self.name
-          "MyJob"
-        end
-      end
-
-      definition = builder.start(klass).expand_chain(klass).complete
+      definition = builder.start(MyFirstJob).expand_chain(MySecondJob).complete
 
       step = definition.steps.last
       expect(definition.steps.length).to eq(2)
-      expect(step.klass).to eq("MyJob")
+      expect(step.klass).to eq("MySecondJob")
       expect(step.type).to eq(:expand)
     end
   end
