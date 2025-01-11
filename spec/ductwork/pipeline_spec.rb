@@ -3,9 +3,7 @@
 RSpec.describe Ductwork::Pipeline do
   describe ".define" do
     subject(:klass) do
-      Class.new do
-        include Ductwork::Pipeline
-
+      Class.new(described_class) do
         def self.name
           "MyPipeline"
         end
@@ -76,9 +74,7 @@ RSpec.describe Ductwork::Pipeline do
         end
       end
 
-      Class.new do
-        include Ductwork::Pipeline
-
+      Class.new(described_class) do
         define do |pipeline|
           pipeline.start(job_class1).chain(job_class2)
         end

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 module Ductwork
-  module Pipeline
+  class Pipeline
     class DefinitionError < StandardError; end
 
-    module ClassMethods
+    class << self
       attr_reader :pipeline_definition
 
       def define(&block)
@@ -72,10 +72,6 @@ module Ductwork
           )
         end
       end
-    end
-
-    def self.included(base)
-      base.extend(ClassMethods)
     end
   end
 end
