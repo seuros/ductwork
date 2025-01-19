@@ -9,6 +9,7 @@ Bundler.require :default, :development
 Combustion.initialize! :active_record
 
 require "rspec/rails"
+require "sidekiq/testing"
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
@@ -23,5 +24,9 @@ RSpec.configure do |config|
 
   config.before do
     Ductwork.reset!
+
+    # Simulate railtie loading the configuration for each example
+    path = Rails.root.join("config/ductwork.yml")
+    Ductwork.configuration ||= Ductwork::Configuration.new(path: path)
   end
 end

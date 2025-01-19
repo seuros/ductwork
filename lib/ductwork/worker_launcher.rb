@@ -2,10 +2,10 @@
 
 module Ductwork
   class WorkerLauncher
-    def self.start!(configuration)
+    def self.start!
       supervisor = Ductwork::Supervisor.new
 
-      configuration.pipelines.each do |pipeline|
+      Ductwork.configuration.pipelines.each do |pipeline|
         supervisor.add_worker(metadata: { pipeline: pipeline }) do
           Ductwork::PipelineWorker.new(pipeline).run
         end

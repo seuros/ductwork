@@ -43,27 +43,25 @@ module Ductwork
         Ductwork.pipelines << name.to_s
       end
 
-      def trigger(_args)
-        Record.transaction do
-          pipeline = create_pipeline
-          steps = create_steps(pipeline)
-          steps.each_with_index do |step, index|
-            step.previous_step = if index.positive?
-                                   steps[index - 1]
-                                 end
-            step.next_step = if !steps[index + 1].nil?
-                               steps[index + 1]
-                             end
-            step.save!
-          end
+      def trigger(*args)
+        jid = SecureRandom.uuid
+        pipeline, job = nil
 
-          pipeline
+        Record.transaction do
+          pipeline = create_pipeline!
+          steps = create_steps!(pipeline)
+          assign_step_order!(steps)
+          job = create_job!(jid, steps.first)
         end
+
+        enqueue_job(job, *args)
+
+        pipeline
       end
 
       private
 
-      def create_pipeline
+      def create_pipeline!
         create!(
           name: name.to_s,
           status: :in_progress,
@@ -71,7 +69,7 @@ module Ductwork
         )
       end
 
-      def create_steps(pipeline)
+      def create_steps!(pipeline)
         pipeline_definition.steps.map do |step|
           started_at = if step.first?
                          Time.current
@@ -88,6 +86,39 @@ module Ductwork
             klass: step.klass,
             status: :in_progress,
             started_at: started_at
+          )
+        end
+      end
+
+      def assign_step_order!(steps)
+        steps.each_with_index do |step, index|
+          step.previous_step = if index.positive?
+                                 steps[index - 1]
+                               end
+          step.next_step = if !steps[index + 1].nil?
+                             steps[index + 1]
+                           end
+          step.save!
+        end
+      end
+
+      def create_job!(jid, step)
+        Job.create!(
+          adapter: Ductwork.configuration.adapter,
+          jid: jid,
+          enqueued_at: Time.current,
+          status: "in_progress",
+          step: step
+        )
+      end
+
+      def enqueue_job(job, *args)
+        if job.sidekiq?
+          Ductwork::SidekiqJob.client_push(
+            "queue" => Ductwork.configuration.job_queue,
+            "class" => "Ductwork::SidekiqJob",
+            "args" => [job.step.klass] + args,
+            "jid" => job.jid
           )
         end
       end

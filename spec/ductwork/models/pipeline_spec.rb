@@ -184,17 +184,33 @@ RSpec.describe Ductwork::Pipeline do
       expect(step2.next_step).to be_nil
     end
 
-    xit "enqueues the job"
-
     it "creates a job record" do
-      pending "need to make decisions on job wrapping first"
+      Ductwork.configuration = instance_double(
+        Ductwork::Configuration,
+        adapter: "sidekiq",
+        job_queue: "high-priority"
+      )
 
       expect do
         klass.trigger(args)
       end.to change(Ductwork::Job, :count).by(1)
       job = Ductwork::Job.last
-      expect(job.native_id).to be_present
+      expect(job).to be_in_progress
+      expect(job).to be_sidekiq
+      expect(job.jid).to be_present
       expect(job.enqueued_at).to be_present
+    end
+
+    it "enqueues a sidekiq job when the adapter is sidekiq" do
+      Ductwork.configuration = instance_double(
+        Ductwork::Configuration,
+        adapter: "sidekiq",
+        job_queue: "high-priority"
+      )
+
+      expect do
+        klass.trigger(args)
+      end.to change(Ductwork::SidekiqJob.jobs, :count).by(1)
     end
   end
 end

@@ -6,6 +6,13 @@ module Ductwork
       ActiveSupport.on_load(:active_record) do
         require "ductwork/models"
       end
+
+      if defined?(Sidekiq)
+        require "ductwork/sidekiq_job"
+      end
+
+      path = Rails.root.join("config/ductwork.yml")
+      Ductwork.configuration ||= Configuration.new(path: path)
     end
   end
 end

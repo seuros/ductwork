@@ -4,6 +4,7 @@ require "active_record"
 require "active_support"
 require "active_support/core_ext/hash"
 require "active_support/core_ext/time"
+require "securerandom"
 require "rails/railtie"
 
 require_relative "ductwork/configuration"
@@ -17,12 +18,17 @@ require_relative "ductwork/worker_launcher"
 require_relative "ductwork/railtie" if defined?(Rails)
 
 module Ductwork
-  def self.pipelines
-    @_pipelines ||= []
-  end
+  class << self
+    attr_accessor :configuration
 
-  # NOTE: this is test interface only
-  def self.reset!
-    @_pipelines = nil
+    def pipelines
+      @_pipelines ||= []
+    end
+
+    # NOTE: this is test interface only
+    def reset!
+      @_pipelines = nil
+      @configuration = nil
+    end
   end
 end
