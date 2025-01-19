@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ductwork
-  class SidekiqJob
+  class SidekiqWrapperJob
     include Sidekiq::Job
 
     def perform(klass, *args)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Ductwork::SidekiqJob do
+RSpec.describe Ductwork::SidekiqWrapperJob do
   describe "#perform" do
     let(:klass) { "MyFirstJob" }
     let(:args) { [1, "a"] }

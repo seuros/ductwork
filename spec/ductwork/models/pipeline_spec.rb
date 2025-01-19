@@ -210,7 +210,7 @@ RSpec.describe Ductwork::Pipeline do
 
       expect do
         klass.trigger(args)
-      end.to change(Ductwork::SidekiqJob.jobs, :count).by(1)
+      end.to change(Ductwork::SidekiqWrapperJob.jobs, :count).by(1)
     end
   end
 end

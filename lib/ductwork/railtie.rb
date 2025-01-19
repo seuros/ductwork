@@ -8,7 +8,7 @@ module Ductwork
       end
 
       if defined?(Sidekiq)
-        require "ductwork/sidekiq_job"
+        require "ductwork/sidekiq_wrapper_job"
       end
 
       path = Rails.root.join("config/ductwork.yml")
