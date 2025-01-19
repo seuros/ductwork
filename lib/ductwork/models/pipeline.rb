@@ -44,14 +44,13 @@ module Ductwork
       end
 
       def trigger(*args)
-        jid = SecureRandom.uuid
         pipeline, job = nil
 
         Record.transaction do
           pipeline = create_pipeline!
           steps = create_steps!(pipeline)
           assign_step_order!(steps)
-          job = create_job!(jid, steps.first)
+          job = create_job!(steps.first)
         end
 
         enqueue_job(job, *args)
@@ -102,10 +101,10 @@ module Ductwork
         end
       end
 
-      def create_job!(jid, step)
+      def create_job!(step)
         Job.create!(
           adapter: Ductwork.configuration.adapter,
-          jid: jid,
+          jid: SecureRandom.uuid,
           enqueued_at: Time.current,
           status: "in_progress",
           step: step
