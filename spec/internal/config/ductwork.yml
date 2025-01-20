@@ -1,0 +1,14 @@
+default: &default
+  adapter: "activejob"
+  job_queue: "high-priority"
+  workers:
+    - pipelines: "*"
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
