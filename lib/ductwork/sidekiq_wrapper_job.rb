@@ -4,6 +4,8 @@ module Ductwork
   class SidekiqWrapperJob
     include Sidekiq::Job
 
+    sidekiq_options retry: 0
+
     def perform(klass, *args)
       return_value = klass.constantize.new.perform(*args)
       job = Job.find_by!(jid: jid)
