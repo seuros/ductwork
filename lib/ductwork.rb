@@ -32,4 +32,4 @@ module Ductwork
   end
 end
 
-require_relative "ductwork/engine" if defined?(Rails::Engine)
+require "ductwork/engine" if defined?(Rails::Engine)
