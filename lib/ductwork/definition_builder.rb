@@ -40,7 +40,7 @@ module Ductwork
       self
     end
 
-    def collapse_chain(klass)
+    def collapse(into: klass)
       if !started
         raise StartError, "Must start pipeline before collapsing chain"
       end
@@ -49,7 +49,7 @@ module Ductwork
         raise CollapseError, "Must expand pipeline before collapsing chain"
       end
 
-      add_step(klass: klass, type: :collapse)
+      add_step(klass: into, type: :collapse)
       self
     end
 

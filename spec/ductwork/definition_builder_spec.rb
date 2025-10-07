@@ -67,12 +67,12 @@ RSpec.describe Ductwork::DefinitionBuilder do
     end
   end
 
-  describe "#collapse_chain" do
+  describe "#collapse" do
     let(:builder) { described_class.new }
 
     it "raises if pipeline has not been started" do
       expect do
-        builder.collapse_chain(spy)
+        builder.collapse(into: spy)
       end.to raise_error(
         described_class::StartError,
         "Must start pipeline before collapsing chain"
@@ -81,7 +81,7 @@ RSpec.describe Ductwork::DefinitionBuilder do
 
     it "raises if chain is not expanded" do
       expect do
-        builder.start(spy).collapse_chain(spy)
+        builder.start(spy).collapse(into: spy)
       end.to raise_error(
         described_class::CollapseError,
         "Must expand pipeline before collapsing chain"
