@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ductwork
-  class PipelineWorker
+  class PipelineAdvancer
     def initialize(pipeline_name)
       @pipeline_name = pipeline_name
       @running = true

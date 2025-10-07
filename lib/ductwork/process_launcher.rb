@@ -7,7 +7,7 @@ module Ductwork
 
       Ductwork.configuration.pipelines.each do |pipeline|
         supervisor.add_worker(metadata: { pipeline: pipeline }) do
-          Ductwork::PipelineWorker.new(pipeline).run
+          Ductwork::PipelineAdvancer.new(pipeline).run
         end
       end
 
