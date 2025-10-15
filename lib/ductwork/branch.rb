@@ -24,7 +24,6 @@ module Ductwork
           step = Ductwork::PlaceholderStep.new(klass, :divide)
 
           branch.steps.push(step)
-          # do we "complete" this current branch?
           children.push(branch)
         end
       end
@@ -34,7 +33,6 @@ module Ductwork
       new_branch = self.class.new(parents: [self, branch_builder])
       step = Ductwork::PlaceholderStep.new(into, :combine)
       new_branch.steps.push(step)
-      # do we "complete" these branches?
       children.push(new_branch)
       branch_builder.children.push(new_branch)
       new_branch
