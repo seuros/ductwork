@@ -62,6 +62,19 @@ RSpec.describe Ductwork::Branch do
       expect(new_branch.steps.sole.klass).to eq(MyFirstJob)
       expect(new_branch.steps.sole.type).to eq(:combine)
     end
+
+    it "combines multiple branches and returns a new branch" do
+      second_branch = described_class.new
+      third_branch = described_class.new
+
+      new_branch = branch.combine(second_branch, third_branch, into: MyFirstJob)
+
+      expect(new_branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(new_branch.parents.length).to eq(3)
+      expect(branch.children.sole).to eq(new_branch)
+      expect(second_branch.children.sole).to eq(new_branch)
+      expect(third_branch.children.sole).to eq(new_branch)
+    end
   end
 
   describe "#expand" do

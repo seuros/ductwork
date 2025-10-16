@@ -29,12 +29,12 @@ module Ductwork
       end
     end
 
-    def combine(branch_builder, into:)
-      new_branch = self.class.new(parents: [self, branch_builder])
+    def combine(*branches, into:)
+      new_branch = self.class.new(parents: [self, *branches])
       step = Ductwork::PlaceholderStep.new(into, :combine)
       new_branch.steps.push(step)
       children.push(new_branch)
-      branch_builder.children.push(new_branch)
+      branches.each { |b| b.children.push(new_branch) }
       new_branch
     end
 

@@ -117,6 +117,19 @@ RSpec.describe Ductwork::DefinitionBuilder do
       expect(fourth_step.klass).to eq(MyFourthJob)
     end
 
+    it "merges multiple branches together into a new step" do
+      definition = builder
+                   .start(MyFirstJob)
+                   .divide(to: [MySecondJob, MyThirdJob, MyFourthJob])
+                   .combine(into: MyFifthJob)
+                   .complete
+
+      combined_branch = definition.branch.children.sample.children.sole
+      expect(definition.branch.children.length).to eq(3)
+      expect(combined_branch.parents.length).to eq(3)
+      expect(combined_branch.steps.sole.klass).to eq(MyFifthJob)
+    end
+
     it "merges the branches together into a new step when given a block" do
       definition = builder.start(MyFirstJob).divide(to: [MySecondJob, MyThirdJob]) do |b1, b2|
         b1.combine(b2, into: MyFourthJob)

@@ -59,7 +59,7 @@ module Ductwork
         raise CombineError, "Must divide pipeline definition before combining steps"
       end
 
-      branch = current_branches.first.combine(current_branches.last, into: into)
+      branch = current_branches[0].combine(*current_branches[1..], into: into)
       @current_branches = [branch]
       @divisions -= 1
 
