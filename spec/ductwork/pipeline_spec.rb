@@ -142,7 +142,7 @@ RSpec.describe Ductwork::Pipeline do
     end
   end
 
-  describe ".trigger", pending: "change in implementation" do
+  describe ".trigger" do
     subject(:klass) do
       Class.new(described_class) do
         define do |pipeline|
@@ -165,49 +165,38 @@ RSpec.describe Ductwork::Pipeline do
       end.to change(described_class, :count).by(1)
       expect(pipeline.klass).to eq("MyPipeline")
       expect(pipeline).to be_in_progress
+      expect(pipeline.definition).to be_present
       expect(pipeline.triggered_at).to be_present
       expect(pipeline.completed_at).to be_nil
-      expect(pipeline.steps.count).to eq(2)
     end
 
-    it "creates step records" do
+    it "creates the initial step record" do
+      pipeline = nil
+
       expect do
-        klass.trigger(args)
-      end.to change(Ductwork::Step, :count).by(2)
-      step1, step2 = Ductwork::Step.all
-      expect(step1).to be_start
-      expect(step1.klass).to eq("MyFirstJob")
-      expect(step1.started_at).to be_present
-      expect(step2).to be_default
-      expect(step2.klass).to eq("MySecondJob")
-      expect(step2.started_at).to be_nil
+        pipeline = klass.trigger(args)
+      end.to change(Ductwork::Step, :count).by(1)
+      step = pipeline.steps.reload.first
+      expect(step).to be_start
+      expect(step.klass).to eq("MyFirstJob")
+      expect(step.started_at).to be_present
     end
 
-    it "assigns step order" do
-      klass.trigger(args)
+    it "enqueues a job"
 
-      step1, step2 = Ductwork::Step.all
-      expect(step1.previous_step).to be_nil
-      expect(step1.next_step).to eq(step2)
-      expect(step2.previous_step).to eq(step1)
-      expect(step2.next_step).to be_nil
-    end
+    it "raises if pipeline not defined" do
+      other_klass = Class.new(described_class) do
+        def self.name
+          "MyPipeline"
+        end
+      end
 
-    it "creates a job record" do
-      Ductwork.configuration = instance_double(
-        Ductwork::Configuration,
-        adapter: "sidekiq",
-        job_queue: "high-priority"
+      expect do
+        other_klass.trigger(1)
+      end.to raise_error(
+        described_class::DefinitionError,
+        "Pipeline must be defined before triggering"
       )
-
-      expect do
-        klass.trigger(args)
-      end.to change(Ductwork::Job, :count).by(1)
-      job = Ductwork::Job.last
-      expect(job).to be_running
-      expect(job).to be_sidekiq
-      expect(job.jid).to be_present
-      expect(job.enqueued_at).to be_present
     end
   end
 end

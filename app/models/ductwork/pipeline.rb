@@ -46,83 +46,31 @@ module Ductwork
         Ductwork.pipelines << name.to_s
       end
 
-      def trigger(*args)
-        pipeline, job = nil
+      def trigger(*)
+        if pipeline_definition.nil?
+          raise DefinitionError, "Pipeline must be defined before triggering"
+        end
+
+        pipeline = nil
+        step_definition = pipeline_definition.branch.steps.first
 
         Record.transaction do
-          pipeline = create_pipeline!
-          steps = create_steps!(pipeline)
-          assign_step_order!(steps)
-          job = create_job!(steps.first)
-        end
-
-        enqueue_job(job, *args)
-
-        pipeline
-      end
-
-      private
-
-      def create_pipeline!
-        create!(
-          klass: name.to_s,
-          status: :in_progress,
-          triggered_at: Time.current
-        )
-      end
-
-      def create_steps!(pipeline)
-        pipeline_definition.steps.map do |step|
-          started_at = if step.first?
-                         Time.current
-                       end
-          type = if step.type.to_sym == :chain
-                   :default
-                 else
-                   step.type
-                 end
-
-          Step.create!(
-            pipeline: pipeline,
-            step_type: type,
-            klass: step.klass,
+          pipeline = create!(
+            klass: name.to_s,
             status: :in_progress,
-            started_at: started_at
+            definition: pipeline_definition.to_json,
+            definition_sha1: Digest::SHA1.hexdigest(pipeline_definition.to_json),
+            triggered_at: Time.current
+          )
+          pipeline.steps.create!(
+            klass: step_definition.klass,
+            status: :in_progress,
+            step_type: :start,
+            started_at: Time.current
           )
         end
-      end
 
-      def assign_step_order!(steps)
-        steps.each_with_index do |step, index|
-          step.previous_step = if index.positive?
-                                 steps[index - 1]
-                               end
-          step.next_step = if !steps[index + 1].nil?
-                             steps[index + 1]
-                           end
-          step.save!
-        end
-      end
-
-      def create_job!(step)
-        Job.create!(
-          adapter: Ductwork.configuration.adapter,
-          jid: SecureRandom.uuid,
-          enqueued_at: Time.current,
-          status: "running",
-          step: step
-        )
-      end
-
-      def enqueue_job(job, _args)
-        if job.sidekiq?
-          # Ductwork::SidekiqWrapperJob.client_push(
-          #   "queue" => Ductwork.configuration.job_queue,
-          #   "class" => "Ductwork::SidekiqWrapperJob",
-          #   "args" => [job.step.klass] + args,
-          #   "jid" => job.jid
-          # )
-        end
+        pipeline
       end
     end
   end
