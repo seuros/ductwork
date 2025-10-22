@@ -46,13 +46,11 @@ module Ductwork
         Ductwork.pipelines << name.to_s
       end
 
-      # NOTE: will eventually refactor this method to fix the style violations
-      def trigger(*args) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+      def trigger(*args)
         if pipeline_definition.nil?
           raise DefinitionError, "Pipeline must be defined before triggering"
         end
 
-        pipeline = nil
         step_definition = pipeline_definition.branch.steps.first
 
         Record.transaction do
@@ -69,21 +67,10 @@ module Ductwork
             step_type: :start,
             started_at: Time.current
           )
-          job = step.create_job!(
-            klass: step_definition.klass,
-            started_at: Time.current,
-            input_args: JSON.dump(args)
-          )
-          execution = job.executions.create!(
-            started_at: Time.current
-          )
-          execution.create_availability!(
-            started_at: Time.current,
-            completed: false
-          )
-        end
+          Ductwork::Job.enqueue(step_definition.klass, step, *args)
 
-        pipeline
+          pipeline
+        end
       end
     end
   end

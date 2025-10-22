@@ -11,6 +11,11 @@ Combustion.initialize! :active_record
 require "rspec/rails"
 require "sidekiq/testing"
 
+Dir
+  .glob("support/**/*.rb", base: "spec")
+  .map { |file| file.delete_suffix(".rb") }
+  .each { |file| require file }
+
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
   config.example_status_persistence_file_path = ".rspec_status"

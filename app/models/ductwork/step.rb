@@ -8,7 +8,6 @@ module Ductwork
     has_one :job, class_name: "Ductwork::Job", foreign_key: "step_id"
 
     validates :klass, presence: true
-    validates :pipeline_id, presence: true
     validates :status, presence: true
     validates :step_type, presence: true
 

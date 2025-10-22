@@ -33,4 +33,48 @@ RSpec.describe Ductwork::Job do
       expect(job).to be_valid
     end
   end
+
+  describe ".enqueue" do
+    let(:job_klass) { "MyFirstJob" }
+    let(:step) { create(:step) }
+    let(:args) { %i[foo bar] }
+
+    it "creates a job record" do
+      expect do
+        described_class.enqueue(job_klass, step, *args)
+      end.to change(described_class, :count).by(1)
+        .and change(step, :job).from(nil)
+
+      job = described_class.sole
+      expect(job.klass).to eq(job_klass)
+      expect(job.started_at).to be_within(1.second).of(Time.current)
+      expect(job.completed_at).to be_nil
+      expect(job.input_args).to eq(JSON.dump(args))
+      expect(job.output_payload).to be_nil
+      expect(job.step).to eq(step)
+    end
+
+    it "creates an execution record" do
+      expect do
+        described_class.enqueue(job_klass, step, *args)
+      end.to change(Ductwork::Execution, :count).by(1)
+
+      job = described_class.sole
+      execution = job.executions.sole
+      expect(execution.started_at).to be_within(1.second).of(Time.current)
+      expect(execution.completed_at).to be_nil
+    end
+
+    it "creates an availability record" do
+      expect do
+        described_class.enqueue(job_klass, step, *args)
+      end.to change(Ductwork::Availability, :count).by(1)
+
+      execution = Ductwork::Execution.sole
+      availability = execution.availability
+      expect(availability.started_at).to be_within(1.second).of(Time.current)
+      expect(availability.completed_at).to be_nil
+      expect(availability.completed).to be(false)
+    end
+  end
 end
