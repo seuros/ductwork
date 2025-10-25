@@ -5,6 +5,7 @@ module Ductwork
     def initialize(pipeline)
       @pipeline = pipeline
       @running = true
+      # TODO: don't handle signals in threads
       Signal.trap(:INT) { @running = false }
       Signal.trap(:TERM) { @running = false }
     end
