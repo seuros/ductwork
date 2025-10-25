@@ -2,8 +2,8 @@
 
 module Ductwork
   class PipelineAdvancer
-    def initialize(pipeline_names)
-      @pipeline_names = pipeline_names
+    def initialize(*klasses)
+      @klasses = klasses
       @running = true
       Signal.trap(:INT) { @running = false }
       Signal.trap(:TERM) { @running = false }
@@ -11,64 +11,37 @@ module Ductwork
 
     def run
       while running
-        update_pipelines
+        advance_all_pipelines
+        # TODO: update heartbeat
         sleep(1)
+      end
+    end
+
+    def advance_all_pipelines
+      pipelines.find_each do |pipeline|
+        break if !running
+
+        # 1. Query all other `steps` records in the same Stage/Branch
+        # 2. If all steps are status "advancing", continue.
+        #      Otherwise, Stage is not ready to advance
+        # 3. Check if any `steps.job` has failed:
+        #      If not, continue.
+        #      If yes, halt pipeline and log
+        # 4. Mark all `steps` in Stage as "completed"
+        # 5. Create next Stage and all `steps` with status "in-progress" from pipeline definition
       end
     end
 
     private
 
-    attr_reader :pipeline_names, :running
-
-    def update_pipelines
-      # pipelines.find_each do |pipeline|
-      #   break if !running
-
-      #   pipeline.steps.in_progress.find_each do |step|
-      #     break if !running
-
-      #     next_step = step.next_step
-
-      #     if next_step.collapse? && step.jobs.all?(&:advancing?)
-      #       job = nil
-
-      #       Record.transaction do
-      #         step.jobs.update!(status: "completed", completed_at: Time.current)
-      #         next_step.update!(status: "in_progress", started_at: Time.current)
-      #         step.update!(status: "completed", completed_at: Time.current)
-      #         job = next_step.jobs.create!(
-      #           jid: SecureRandom.uuid,
-      #           enqueued_at: Time.current,
-      #           status: "running"
-      #         )
-      #       end
-
-      #       # args = [job.step.klass] + step.jobs.pluck(:return_value)
-
-      #       if job.sidekiq?
-      #         # Ductwork::SidekiqWrapperJob.client_push(
-      #         #   "class" => "Ductwork::SidekiqWrapperJob",
-      #         #   "args" => args,
-      #         #   "jid" => job.jid
-      #         # )
-      #       end
-      #     elsif !next_step.collapse?
-      #       step.jobs.advancing.find_each do |job|
-      #         Record.transaction do
-      #           job.update!(status: "completed", completed_at: Time.current)
-      #           next_step.status = "in_progress"
-      #           next_step.started_at ||= Time.current
-      #           next_step.save!
-      #           # what else?
-      #         end
-      #       end
-      #     end
-      #   end
-      # end
-    end
+    attr_reader :klasses, :running
 
     def pipelines
-      Ductwork::PipelineInstance.in_progress.where(name: pipeline_names)
+      Ductwork::Pipeline
+        .joins(:steps)
+        .where(klass: klasses)
+        .where(steps: { status: "advancing" })
+        .distinct
     end
   end
 end

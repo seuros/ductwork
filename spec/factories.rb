@@ -3,7 +3,7 @@
 # This will guess the User class
 FactoryBot.define do
   factory :pipeline, class: "Ductwork::Pipeline" do
-    klass { "MyFirstJob" }
+    sequence(:klass) { |n| "MyPipeline#{n}" }
     triggered_at { Time.current }
     definition { JSON.dump({}) }
     definition_sha1 { Digest::SHA1.hexdigest(definition) }
