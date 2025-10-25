@@ -15,15 +15,15 @@ RSpec.describe Ductwork::Configuration do
     let(:data) do
       <<~DATA
         default: &default
-          workers:
-            - pipelines: "PipelineA, PipelineB"
+          pipelines:
+            - PipelineA
+            - PipelineB
 
         development:
           <<: *default
 
         test:
-          workers:
-            - pipelines: "*"
+          pipelines: "*"
 
         production:
           <<: *default
@@ -63,32 +63,84 @@ RSpec.describe Ductwork::Configuration do
 
       expect(config.pipelines).to eq(%w[PipelineA PipelineB PipelineC])
     end
+  end
 
-    def create_temp_file
-      Tempfile.new("ductwork.yml").tap do |file|
-        file.write(data)
-        file.rewind
+  describe "#job_worker_count" do
+    let(:config_file) { create_temp_file }
+
+    before do
+      create_default_config_file
+    end
+
+    after do
+      cleanup
+    end
+
+    context "with a count for all pipelines" do
+      let(:data) do
+        <<~DATA
+          default: &default
+            job_worker:
+              count: 5
+
+          test:
+            <<: *default
+        DATA
+      end
+
+      it "returns the count" do
+        config = described_class.new
+
+        expect(config.job_worker_count("foobar")).to eq(5)
       end
     end
 
-    def create_default_config_file
-      if !File.directory?("config")
-        FileUtils.mkdir_p("config")
+    context "with a count for the specific pipeline" do
+      let(:data) do
+        <<~DATA
+          default: &default
+            job_worker:
+              count:
+                PipelineA: 5
+                PipelineB: 10
+
+          test:
+            <<: *default
+        DATA
       end
 
-      File.new("config/ductwork.yml", "w").tap do |file|
-        file.write(data)
-        file.rewind
+      it "returns the count" do
+        config = described_class.new
+
+        expect(config.job_worker_count("PipelineB")).to eq(10)
       end
     end
+  end
 
-    def cleanup
-      config_file.close
-      config_file.unlink
+  def create_temp_file
+    Tempfile.new("ductwork.yml").tap do |file|
+      file.write(data)
+      file.rewind
+    end
+  end
 
-      if File.directory?("config")
-        FileUtils.rm_rf("config")
-      end
+  def create_default_config_file
+    if !File.directory?("config")
+      FileUtils.mkdir_p("config")
+    end
+
+    File.new("config/ductwork.yml", "w").tap do |file|
+      file.write(data)
+      file.rewind
+    end
+  end
+
+  def cleanup
+    config_file.close
+    config_file.unlink
+
+    if File.directory?("config")
+      FileUtils.rm_rf("config")
     end
   end
 end

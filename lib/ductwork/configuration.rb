@@ -7,7 +7,6 @@ module Ductwork
     DEFAULT_ADAPTER = "activejob"
     DEFAULT_ENV = :default
     DEFAULT_FILE_PATH = "config/ductwork.yml"
-    DELIMITER = ","
     PIPELINES_WILDCARD = "*"
     SUPPORTED_ADAPTERS = %w[sidekiq resqueue delayed_job activejob].freeze
 
@@ -24,12 +23,22 @@ module Ductwork
     end
 
     def pipelines
-      raw_pipelines = config.dig(:workers, 0, :pipelines)
+      raw_pipelines = config[:pipelines]
 
       if raw_pipelines == PIPELINES_WILDCARD
         Ductwork.pipelines
       else
-        raw_pipelines.split(DELIMITER).map(&:strip)
+        raw_pipelines.map(&:strip)
+      end
+    end
+
+    def job_worker_count(pipeline)
+      raw_count = config.dig(:job_worker, :count)
+
+      if raw_count.is_a?(Hash)
+        raw_count[pipeline.to_sym]
+      else
+        raw_count
       end
     end
 
