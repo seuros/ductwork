@@ -56,8 +56,25 @@ module Ductwork
 
     def shutdown!
       running_coordinator.shutdown!
+      await_threads_graceful_shutdown
+      kill_all_threads
+    end
 
-      # TODO: more graceful shutdown stuff
+    def await_threads_graceful_shutdown
+      timeout = Ductwork.configuration.job_worker_shutdown_timeout
+      deadline = Time.current + timeout
+
+      while Time.current < deadline
+        threads.each do |thread|
+          break if Time.current < deadline
+
+          thread.join(1)
+        end
+      end
+    end
+
+    def kill_all_threads
+      threads.each(&:kill)
     end
   end
 end
