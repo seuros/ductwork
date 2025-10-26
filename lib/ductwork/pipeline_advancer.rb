@@ -18,7 +18,7 @@ module Ductwork
     end
 
     def advance_all_pipelines
-      pipelines.find_each do |pipeline|
+      pipelines.find_each do |_pipeline|
         break if !running
 
         # 1. Query all other `steps` records in the same Stage/Branch
