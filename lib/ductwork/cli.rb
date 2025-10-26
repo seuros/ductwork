@@ -9,7 +9,7 @@ module Ductwork
         options = parse_options(args)
         Ductwork.configuration = Configuration.new(**options)
 
-        Ductwork::ProcessLauncher.start!
+        Ductwork::SupervisorRunner.start!
       end
 
       private

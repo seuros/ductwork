@@ -2,7 +2,7 @@
 
 module Ductwork
   # TODO: maybe rename to `Processes::Launcher`
-  class ProcessLauncher
+  class SupervisorRunner
     def self.start!
       supervisor = Ductwork::Supervisor.new
       pipelines_to_advance = Ductwork.configuration.pipelines
