@@ -12,6 +12,7 @@ AllCops:
   Exclude:
     - Appraisals
     - gemfiles/**/*
+    - vendor/**/*
 
 Layout/MultilineMethodCallIndentation:
   Exclude:
