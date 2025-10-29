@@ -22,27 +22,26 @@ module Ductwork
 
       workers << { metadata: metadata, pid: pid, block: block }
       logger.debug(
-        msg: "Started process (#{pid}) with metadata #{metadata}",
-        role: :supervisor,
+        msg: "Started child process (#{pid}) with metadata #{metadata}",
         pid: pid
       )
     end
 
     def run
-      logger.debug(msg: "Entering main work loop", role: :supervisor)
+      logger.debug(msg: "Entering main work loop", role: :supervisor, pid: ::Process.pid)
+
       while running
         sleep(1)
-        logger.debug(msg: "Checking workers are alive", role: :supervisor)
         check_workers
       end
 
-      logger.debug(msg: "Beginning shutdown", role: :supervisor)
       shutdown
     end
 
     def shutdown
       @running = false
 
+      logger.debug(msg: "Beginning shutdown", role: :supervisor)
       terminate_gracefully
       wait_for_workers_to_exit
       terminate_immediately
@@ -53,6 +52,8 @@ module Ductwork
     attr_reader :running, :timeout
 
     def check_workers
+      logger.debug(msg: "Checking workers are alive", role: :supervisor)
+
       workers.each do |worker|
         if process_dead?(worker[:pid])
           old_pid = worker[:pid]
@@ -68,6 +69,8 @@ module Ductwork
           )
         end
       end
+
+      logger.debug(msg: "All workers are alive or revived", role: :supervisor)
     end
 
     def terminate_gracefully
@@ -125,10 +128,12 @@ module Ductwork
     end
 
     def process_dead?(pid)
-      ::Process.kill(0, pid)
-      true
-    rescue Errno::ESRCH, Errno::EPERM
-      false
+      machine_identifier = Ductwork::MachineIdentifier.fetch
+
+      Ductwork::Process
+        .where(pid: pid, machine_identifier: machine_identifier)
+        .where("last_heartbeat_at < ?", 5.minutes.ago)
+        .exists?
     end
 
     def now
