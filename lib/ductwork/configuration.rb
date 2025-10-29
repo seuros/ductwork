@@ -26,8 +26,9 @@ module Ductwork
       raw_pipelines = config[:pipelines] || []
 
       if raw_pipelines == PIPELINES_WILDCARD
-        # FIXME: load and define all pipelines before calling this or something
-        Ductwork.defined_pipelines
+        Dir
+          .glob("**/*.rb", base: "app/pipelines")
+          .map { |path| path.delete_suffix(".rb").camelize }
       else
         raw_pipelines.map(&:strip)
       end

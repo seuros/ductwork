@@ -22,8 +22,8 @@ require "sidekiq/testing"
 
 Dir
   .glob("support/**/*.rb", base: "spec")
-  .map { |file| file.delete_suffix(".rb") }
-  .each { |file| require file }
+  .map { |path| path.delete_suffix(".rb") }
+  .each { |filename| require filename }
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
