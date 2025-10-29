@@ -3,12 +3,8 @@
 require "fileutils"
 
 RSpec.describe Ductwork::Configuration do
-  describe "initialization" do
-    it "raises if no config file at path" do
-      expect do
-        described_class.new
-      end.to raise_error(described_class::FileError, "Missing configuration file")
-    end
+  after do
+    cleanup
   end
 
   describe "#pipelines" do
@@ -30,10 +26,6 @@ RSpec.describe Ductwork::Configuration do
       DATA
     end
     let(:config_file) { create_temp_file }
-
-    after do
-      cleanup
-    end
 
     it "returns the pipelines from the config file at the given path" do
       rails = double(env: "development") # rubocop:disable RSpec/VerifiedDoubles
@@ -63,19 +55,15 @@ RSpec.describe Ductwork::Configuration do
 
       expect(config.pipelines).to eq(%w[PipelineA PipelineB PipelineC])
     end
+
+    it "returns an empty collection when no config file exists" do
+      config = described_class.new
+
+      expect(config.pipelines).to be_empty
+    end
   end
 
   describe "#job_worker_count" do
-    let(:config_file) { create_temp_file }
-
-    before do
-      create_default_config_file
-    end
-
-    after do
-      cleanup
-    end
-
     context "with a count for all pipelines" do
       let(:data) do
         <<~DATA
@@ -89,6 +77,8 @@ RSpec.describe Ductwork::Configuration do
       end
 
       it "returns the count" do
+        create_default_config_file
+
         config = described_class.new
 
         expect(config.job_worker_count("foobar")).to eq(5)
@@ -110,38 +100,57 @@ RSpec.describe Ductwork::Configuration do
       end
 
       it "returns the count" do
+        create_default_config_file
+
         config = described_class.new
 
         expect(config.job_worker_count("PipelineB")).to eq(10)
       end
     end
+
+    context "when no config file exists" do
+      it "returns the default" do
+        config = described_class.new
+
+        expect(config.job_worker_count("foobar")).to eq(
+          described_class::DEFAULT_JOB_WORKER_COUNT
+        )
+      end
+    end
   end
 
   describe "#job_worker_shutdown_timeout" do
-    let(:config_file) { create_temp_file }
-    let(:data) do
-      <<~DATA
-        default: &default
-          job_worker:
-            shutdown_timeout: 30
+    context "when the config file exists" do
+      let(:data) do
+        <<~DATA
+          default: &default
+            job_worker:
+              shutdown_timeout: 30
 
-        test:
-          <<: *default
-      DATA
+          test:
+            <<: *default
+        DATA
+      end
+
+      before do
+        create_default_config_file
+      end
+
+      it "returns the timeout" do
+        config = described_class.new
+
+        expect(config.job_worker_shutdown_timeout).to eq(30)
+      end
     end
 
-    before do
-      create_default_config_file
-    end
+    context "when no config file exists" do
+      it "returns the default" do
+        config = described_class.new
 
-    after do
-      cleanup
-    end
-
-    it "returns the timeout" do
-      config = described_class.new
-
-      expect(config.job_worker_shutdown_timeout).to eq(30)
+        expect(config.job_worker_shutdown_timeout).to eq(
+          described_class::DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT
+        )
+      end
     end
   end
 
@@ -164,8 +173,10 @@ RSpec.describe Ductwork::Configuration do
   end
 
   def cleanup
-    config_file.close
-    config_file.unlink
+    if defined?(config_file)
+      config_file.close
+      config_file.unlink
+    end
 
     if File.directory?("config")
       FileUtils.rm_rf("config")

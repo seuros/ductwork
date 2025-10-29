@@ -2,14 +2,15 @@
 
 module Ductwork
   class Configuration
-    DEFAULT_ADAPTER = "activejob"
     DEFAULT_ENV = :default
     DEFAULT_FILE_PATH = "config/ductwork.yml"
+    DEFAULT_JOB_WORKER_COUNT = 5 # threads
+    DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT = 30 # seconds
     PIPELINES_WILDCARD = "*"
-    SUPPORTED_ADAPTERS = %w[sidekiq resqueue delayed_job activejob].freeze
 
     class AdapterError < StandardError; end
-    class FileError < StandardError; end
+
+    attr_accessor :logger
 
     def initialize(path: DEFAULT_FILE_PATH)
       full_path = Pathname.new(path)
@@ -17,11 +18,11 @@ module Ductwork
       env = defined?(Rails) ? Rails.env.to_sym : DEFAULT_ENV
       @config = data[env]
     rescue Errno::ENOENT
-      raise FileError, "Missing configuration file"
+      @config = {}
     end
 
     def pipelines
-      raw_pipelines = config[:pipelines]
+      raw_pipelines = config[:pipelines] || []
 
       if raw_pipelines == PIPELINES_WILDCARD
         Ductwork.pipelines
@@ -31,7 +32,7 @@ module Ductwork
     end
 
     def job_worker_count(pipeline)
-      raw_count = config.dig(:job_worker, :count)
+      raw_count = config.dig(:job_worker, :count) || DEFAULT_JOB_WORKER_COUNT
 
       if raw_count.is_a?(Hash)
         raw_count[pipeline.to_sym]
@@ -41,7 +42,8 @@ module Ductwork
     end
 
     def job_worker_shutdown_timeout
-      config.dig(:job_worker, :shutdown_timeout)
+      config.dig(:job_worker, :shutdown_timeout) ||
+        DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT
     end
 
     private
