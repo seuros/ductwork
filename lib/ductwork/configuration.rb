@@ -26,6 +26,7 @@ module Ductwork
       raw_pipelines = config[:pipelines] || []
 
       if raw_pipelines == PIPELINES_WILDCARD
+        # FIXME: load and define all pipelines before calling this or something
         Ductwork.pipelines
       else
         raw_pipelines.map(&:strip)
