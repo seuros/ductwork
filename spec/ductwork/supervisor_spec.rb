@@ -28,7 +28,7 @@ RSpec.describe Ductwork::Supervisor do
 
       supervisor.add_worker { raise "simulating a crash" }
 
-      sleep(1) # Wait for process to be restarted
+      sleep(0.5) # Wait for process to be restarted
 
       status = ::Process.kill(0, supervisor.workers.first[:pid])
       expect(supervisor.workers.count).to eq(1)
