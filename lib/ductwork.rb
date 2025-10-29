@@ -19,13 +19,13 @@ module Ductwork
   class << self
     attr_accessor :configuration
 
-    def pipelines
-      @_pipelines ||= []
+    def defined_pipelines
+      @defined_pipelines ||= []
     end
 
     # NOTE: this is test interface only
     def reset!
-      @_pipelines = nil
+      @defined_pipelines = nil
       @configuration = nil
     end
   end

@@ -31,7 +31,7 @@ Metrics/AbcSize:
   Max: 30
 
 Naming/MemoizedInstanceVariableName:
-  EnforcedStyleForLeadingUnderscores: required
+  EnforcedStyleForLeadingUnderscores: optional
 
 RSpec/ExampleLength:
   Max: 35

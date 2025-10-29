@@ -137,8 +137,8 @@ RSpec.describe Ductwork::Pipeline do
         klass.define do |pipeline|
           pipeline.start(spy)
         end
-      end.to change(Ductwork.pipelines, :count).by(1)
-      expect(Ductwork.pipelines).to eq(["MyPipeline"])
+      end.to change(Ductwork.defined_pipelines, :count).by(1)
+      expect(Ductwork.defined_pipelines).to eq(["MyPipeline"])
     end
   end
 
