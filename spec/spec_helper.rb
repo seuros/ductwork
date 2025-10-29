@@ -6,6 +6,15 @@ require "bundler"
 require "ductwork"
 
 Bundler.require :default, :development
+
+require "rails/generators"
+
+# Simulate using the generator, most importantly to create migration files
+Rails::Generators.invoke(
+  "ductwork:install",
+  ["--force"],
+  destination_root: Rails.root.join("spec", "internal").to_s
+)
 Combustion.initialize! :active_record
 
 require "rspec/rails"
