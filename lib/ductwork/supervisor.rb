@@ -94,7 +94,7 @@ module Ductwork
           if ::Process.wait(worker[:pid], ::Process::WNOHANG)
             workers[index] = nil
             logger.debug(
-              msg: "Process (#{worker[:pid]}) stopped successfully",
+              msg: "Child process (#{worker[:pid]}) stopped successfully",
               role: :supervisor,
               pid: worker[:pid]
             )
@@ -116,7 +116,7 @@ module Ductwork
         ::Process.wait(worker[:pid])
         workers[index] = nil
         logger.debug(
-          msg: "Process (#{worker[:pid]}) killed after timeout",
+          msg: "Child process (#{worker[:pid]}) killed after timeout",
           role: :supervisor,
           pid: worker[:pid]
         )
