@@ -35,6 +35,7 @@ module Ductwork
             role: :job_worker,
             pipeline: pipeline
           )
+          sleep(1)
         end
       end
 
@@ -68,7 +69,7 @@ module Ductwork
         if rows_updated == 1
           Ductwork::Job
             .joins(executions: :availability)
-            .find_by(availabilities: { id:, process_id: })
+            .find_by(ductwork_availabilities: { id:, process_id: })
         end
       end
     end
@@ -80,7 +81,7 @@ module Ductwork
         pipeline: pipeline,
         job_klass: job.klass
       )
-      Object.const_get(job.klass).execute(job.input_args)
+      Object.const_get(job.klass).new.execute(job.input_args)
       logger.debug(
         msg: "Executed job",
         role: :job_worker,
