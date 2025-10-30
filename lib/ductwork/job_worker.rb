@@ -2,29 +2,51 @@
 
 module Ductwork
   class JobWorker
-    def initialize(pipeline, running_coordinator)
+    def initialize(pipeline, running_context)
       @pipeline = pipeline
-      @running_coordinator = running_coordinator
+      @running_context = running_context
     end
 
     def run
+      logger.debug(
+        msg: "Entering main work loop",
+        role: :job_worker,
+        pipeline: pipeline
+      )
       while running?
+        logger.debug(
+          msg: "Attempting to claim job",
+          role: :job_worker,
+          pipeline: pipeline
+        )
         job = claim_job
 
         if job.present?
+          logger.debug(
+            msg: "Job claimed",
+            role: :job_worker,
+            pipeline: pipeline
+          )
+
           process_job(job)
         else
-          # TODO: log
+          logger.debug(
+            msg: "No job to claim, looping",
+            role: :job_worker,
+            pipeline: pipeline
+          )
         end
       end
+
+      shutdown
     end
 
     private
 
-    attr_reader :pipeline, :running_coordinator
+    attr_reader :pipeline, :running_context
 
     def running?
-      running_coordinator.running?
+      running_context.running?
     end
 
     def claim_job
@@ -51,8 +73,20 @@ module Ductwork
       end
     end
 
+    def shutdown
+      logger.debug(
+        msg: "Shutting down",
+        role: :job_worker,
+        pipeline: pipeline
+      )
+    end
+
     def process_job(job)
       # WERK
+    end
+
+    def logger
+      Ductwork.configuration.logger
     end
   end
 end

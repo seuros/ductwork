@@ -2,7 +2,7 @@
 
 module Ductwork
   class Supervisor
-    DEFAULT_TIMEOUT = 10 # seconds
+    DEFAULT_TIMEOUT = 30 # seconds
 
     attr_reader :workers
 

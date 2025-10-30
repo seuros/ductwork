@@ -4,14 +4,21 @@ module Ductwork
   class JobWorkerRunner
     def initialize(pipeline)
       @pipeline = pipeline
-      @running_coordinator = Ductwork::RunningCoordinator.new
+      @running_context = Ductwork::RunningContext.new
       @threads = create_threads
 
-      Signal.trap(:INT) { @running = false }
-      Signal.trap(:TERM) { @running = false }
+      Signal.trap(:INT) { running_context.shutdown! }
+      Signal.trap(:TERM) { running_context.shutdown! }
     end
 
     def run
+      create_process!
+      logger.debug(
+        msg: "Entering main work loop",
+        role: :job_worker_runner,
+        pipeline: pipeline
+      )
+
       while running?
         sleep(5)
         attempt_synchronize_threads
@@ -23,7 +30,7 @@ module Ductwork
 
     private
 
-    attr_reader :pipeline, :running_coordinator, :threads
+    attr_reader :pipeline, :running_context, :threads
 
     def worker_count
       Ductwork.configuration.job_worker_count(pipeline)
@@ -33,38 +40,72 @@ module Ductwork
       worker_count.times.map do
         job_worker = Ductwork::JobWorker.new(
           pipeline,
-          running_coordinator
+          running_context
         )
-
-        Thread.new do
+        logger.debug(
+          msg: "Creating new thread",
+          role: :job_worker_runner,
+          pipeline: pipeline
+        )
+        thread = Thread.new do
           job_worker.run
         end
+
+        logger.debug(
+          msg: "Created new thread",
+          role: :job_worker_runner,
+          pipeline: pipeline
+        )
+
+        thread
       end
     end
 
+    def create_process!
+      Ductwork::Process.create!(
+        pid: ::Process.pid,
+        machine_identifier: Ductwork::MachineIdentifier.fetch,
+        last_heartbeat_at: Time.current
+      )
+    end
+
     def running?
-      running_coordinator.running?
+      running_context.running?
     end
 
     def attempt_synchronize_threads
+      logger.debug(
+        msg: "Attempting to synchronize threads",
+        role: :job_worker_runner,
+        pipeline: pipeline
+      )
       threads.each { |thread| thread.join(0.1) }
+      logger.debug(
+        msg: "Synchronizing threads timed out",
+        role: :job_worker_runner,
+        pipeline: pipeline
+      )
     end
 
     def report_heartbeat!
+      logger.debug(msg: "Reporting heartbeat", role: :job_worker_runner)
       Ductwork::Process.report_heartbeat!
+      logger.debug(msg: "Reported heartbeat", role: :job_worker_runner)
     end
 
     def shutdown!
-      running_coordinator.shutdown!
+      running_context.shutdown!
       await_threads_graceful_shutdown
-      kill_all_threads
+      kill_remaining_threads
+      delete_process
     end
 
     def await_threads_graceful_shutdown
       timeout = Ductwork.configuration.job_worker_shutdown_timeout
       deadline = Time.current + timeout
 
-      while Time.current < deadline
+      logger.debug(msg: "Attempting graceful shutdown", role: :job_worker_runner)
+      while Time.current < deadline && threads.any?(&:alive?)
         threads.each do |thread|
           break if Time.current < deadline
 
@@ -73,8 +114,24 @@ module Ductwork
       end
     end
 
-    def kill_all_threads
-      threads.each(&:kill)
+    def kill_remaining_threads
+      threads.each do |thread|
+        if thread.alive?
+          thread.kill
+          logger.debug(msg: "Killed thread", role: :job_worker_runner)
+        end
+      end
+    end
+
+    def delete_process
+      Ductwork::Process.find_by!(
+        pid: ::Process.pid,
+        machine_identifier: Ductwork::MachineIdentifier.fetch
+      ).delete
+    end
+
+    def logger
+      Ductwork.configuration.logger
     end
   end
 end

@@ -47,9 +47,8 @@ RSpec.describe Ductwork::Configuration do
     end
 
     it "returns all defined pipelines when wildcard is configured" do
-      Ductwork.defined_pipelines << "PipelineA"
-      Ductwork.defined_pipelines << "PipelineB"
-      Ductwork.defined_pipelines << "PipelineC"
+      collection = %w[PipelineA PipelineB PipelineC]
+      allow(Dir).to receive(:glob).and_return(collection)
 
       config = described_class.new(path: config_file.path)
 

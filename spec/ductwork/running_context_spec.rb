@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Ductwork::RunningCoordinator do
+RSpec.describe Ductwork::RunningContext do
   subject(:coordinator) { described_class.new }
 
   describe "#running?" do

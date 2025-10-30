@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ductwork
-  class RunningCoordinator
+  class RunningContext
     def initialize
       @mutex = Mutex.new
       @running = true
@@ -12,7 +12,7 @@ module Ductwork
     end
 
     def shutdown!
-      mutex.synchronize { @running = false }
+      @running = false
     end
 
     private
