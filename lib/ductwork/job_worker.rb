@@ -73,16 +73,28 @@ module Ductwork
       end
     end
 
+    def process_job(job)
+      logger.debug(
+        msg: "Executing job",
+        role: :job_worker,
+        pipeline: pipeline,
+        job_klass: job.klass
+      )
+      Object.const_get(job.klass).execute(job.input_args)
+      logger.debug(
+        msg: "Executed job",
+        role: :job_worker,
+        pipeline: pipeline,
+        job_klass: job.klass
+      )
+    end
+
     def shutdown
       logger.debug(
         msg: "Shutting down",
         role: :job_worker,
         pipeline: pipeline
       )
-    end
-
-    def process_job(job)
-      # WERK
     end
 
     def logger
