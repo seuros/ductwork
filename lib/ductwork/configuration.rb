@@ -9,8 +9,6 @@ module Ductwork
     DEFAULT_LOGGER = ::Logger.new($stdout)
     PIPELINES_WILDCARD = "*"
 
-    class AdapterError < StandardError; end
-
     attr_accessor :logger
 
     def initialize(path: DEFAULT_FILE_PATH)
