@@ -2,7 +2,7 @@
 
 RSpec.describe Ductwork::Job do
   describe "validations" do
-    let(:klass) { "MyFirstJob" }
+    let(:klass) { "MyFirstStep" }
     let(:started_at) { Time.current }
     let(:input_args) { 1 }
 
@@ -35,7 +35,7 @@ RSpec.describe Ductwork::Job do
   end
 
   describe ".enqueue" do
-    let(:job_klass) { "MyFirstJob" }
+    let(:job_klass) { "MyFirstStep" }
     let(:step) { create(:step) }
     let(:args) { %i[foo bar] }
 

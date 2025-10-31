@@ -5,27 +5,27 @@ RSpec.describe Ductwork::Branch do
 
   describe "#start" do
     it "adds an initial step to the collection" do
-      branch.start(MyFirstJob)
+      branch.start(MyFirstStep)
 
       expect(branch.steps.length).to eq(1)
-      expect(branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(branch.steps.sole.klass).to eq(MyFirstStep)
       expect(branch.steps.sole.type).to eq(:start)
     end
   end
 
   describe "#chain" do
     it "adds an initial step to the collection" do
-      branch.chain(MyFirstJob)
+      branch.chain(MyFirstStep)
 
       expect(branch.steps.length).to eq(1)
-      expect(branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(branch.steps.sole.klass).to eq(MyFirstStep)
       expect(branch.steps.sole.type).to eq(:chain)
     end
   end
 
   describe "#divide" do
     it "returns new branches with parent-child relationships" do
-      branches = branch.divide(to: [MyFirstJob, MySecondJob])
+      branches = branch.divide(to: [MyFirstStep, MySecondJob])
 
       expect(branches.length).to eq(2)
       expect(branches[0].parents).to match_array(branch)
@@ -34,9 +34,9 @@ RSpec.describe Ductwork::Branch do
     end
 
     it "returns new branches with placeholder steps" do
-      branches = branch.divide(to: [MyFirstJob, MySecondJob])
+      branches = branch.divide(to: [MyFirstStep, MySecondJob])
 
-      expect(branches[0].steps.sole.klass).to eq(MyFirstJob)
+      expect(branches[0].steps.sole.klass).to eq(MyFirstStep)
       expect(branches[0].steps.sole.type).to eq(:divide)
       expect(branches[1].steps.sole.klass).to eq(MySecondJob)
       expect(branches[1].steps.sole.type).to eq(:divide)
@@ -44,7 +44,7 @@ RSpec.describe Ductwork::Branch do
 
     it "yields the new branches if a block is given" do
       expect do |block|
-        branch.divide(to: [MyFirstJob, MySecondJob], &block)
+        branch.divide(to: [MyFirstStep, MySecondJob], &block)
       end.to yield_control
     end
   end
@@ -53,7 +53,7 @@ RSpec.describe Ductwork::Branch do
     it "returns a new branch with parent-child relationships" do
       other_branch = described_class.new
 
-      new_branch = branch.combine(other_branch, into: MyFirstJob)
+      new_branch = branch.combine(other_branch, into: MyFirstStep)
 
       expect(new_branch.parents).to eq([branch, other_branch])
       expect(branch.children).to match_array(new_branch)
@@ -63,9 +63,9 @@ RSpec.describe Ductwork::Branch do
     it "returns a new branch with placeholder steps" do
       other_branch = described_class.new
 
-      new_branch = branch.combine(other_branch, into: MyFirstJob)
+      new_branch = branch.combine(other_branch, into: MyFirstStep)
 
-      expect(new_branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(new_branch.steps.sole.klass).to eq(MyFirstStep)
       expect(new_branch.steps.sole.type).to eq(:combine)
     end
 
@@ -73,9 +73,9 @@ RSpec.describe Ductwork::Branch do
       second_branch = described_class.new
       third_branch = described_class.new
 
-      new_branch = branch.combine(second_branch, third_branch, into: MyFirstJob)
+      new_branch = branch.combine(second_branch, third_branch, into: MyFirstStep)
 
-      expect(new_branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(new_branch.steps.sole.klass).to eq(MyFirstStep)
       expect(new_branch.parents.length).to eq(3)
       expect(branch.children.sole).to eq(new_branch)
       expect(second_branch.children.sole).to eq(new_branch)
@@ -85,20 +85,20 @@ RSpec.describe Ductwork::Branch do
 
   describe "#expand" do
     it "adds an initial step to the collection" do
-      branch.expand(MyFirstJob)
+      branch.expand(MyFirstStep)
 
       expect(branch.steps.length).to eq(1)
-      expect(branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(branch.steps.sole.klass).to eq(MyFirstStep)
       expect(branch.steps.sole.type).to eq(:expand)
     end
   end
 
   describe "#collapse" do
     it "adds an initial step to the collection" do
-      branch.collapse(MyFirstJob)
+      branch.collapse(MyFirstStep)
 
       expect(branch.steps.length).to eq(1)
-      expect(branch.steps.sole.klass).to eq(MyFirstJob)
+      expect(branch.steps.sole.klass).to eq(MyFirstStep)
       expect(branch.steps.sole.type).to eq(:collapse)
     end
   end

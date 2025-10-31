@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MyFirstJob
+class MyFirstStep
   def perform(*)
     "return_value"
   end

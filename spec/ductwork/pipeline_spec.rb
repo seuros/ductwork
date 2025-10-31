@@ -146,7 +146,7 @@ RSpec.describe Ductwork::Pipeline do
     subject(:klass) do
       Class.new(described_class) do
         define do |pipeline|
-          pipeline.start(MyFirstJob).chain(MySecondJob)
+          pipeline.start(MyFirstStep).chain(MySecondJob)
         end
 
         def self.name
@@ -178,7 +178,7 @@ RSpec.describe Ductwork::Pipeline do
       end.to change(Ductwork::Step, :count).by(1)
       step = pipeline.steps.reload.first
       expect(step).to be_start
-      expect(step.klass).to eq("MyFirstJob")
+      expect(step.klass).to eq("MyFirstStep")
       expect(step.started_at).to be_present
     end
 
