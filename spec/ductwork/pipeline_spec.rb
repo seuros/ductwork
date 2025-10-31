@@ -146,7 +146,7 @@ RSpec.describe Ductwork::Pipeline do
     subject(:klass) do
       Class.new(described_class) do
         define do |pipeline|
-          pipeline.start(MyFirstStep).chain(MySecondJob)
+          pipeline.start(MyFirstStep).chain(MySecondStep)
         end
 
         def self.name

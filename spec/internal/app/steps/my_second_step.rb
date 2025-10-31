@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
-class MySecondJob
+class MySecondStep
   def perform; end
 end
