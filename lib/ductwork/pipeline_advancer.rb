@@ -4,17 +4,17 @@ module Ductwork
   class PipelineAdvancer
     def initialize(*klasses)
       @klasses = klasses
-      @running = true
+      @running_context = Ductwork::RunningContext.new
 
-      Signal.trap(:INT) { @running = false }
-      Signal.trap(:TERM) { @running = false }
+      Signal.trap(:INT) { running_context.shutdown! }
+      Signal.trap(:TERM) { running_context.shutdown! }
     end
 
     def run
       create_process!
       logger.debug(msg: "Entering main work loop", role: :pipeline_advancer)
 
-      while running
+      while running_context.running?
         advance_all_pipelines
         report_heartbeat!
         sleep(1)
@@ -27,7 +27,7 @@ module Ductwork
       logger.debug(msg: "Advancing all pipelines", role: :pipeline_advancer)
 
       pipelines.find_each do |_pipeline|
-        break if !running
+        break if !running_context.running?
 
         # 1. Query all other `steps` records in the same Stage/Branch
         # 2. If all steps are status "advancing", continue.
@@ -44,7 +44,7 @@ module Ductwork
 
     private
 
-    attr_reader :klasses, :running
+    attr_reader :klasses, :running_context
 
     def create_process!
       Ductwork::Process.create!(
