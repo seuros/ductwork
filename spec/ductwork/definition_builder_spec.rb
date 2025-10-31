@@ -102,14 +102,14 @@ RSpec.describe Ductwork::DefinitionBuilder do
       returned_builder = builder
                          .start(MyFirstStep)
                          .divide(to: [MySecondStep, MyThirdStep])
-                         .combine(into: MyFourthJob)
+                         .combine(into: MyFourthStep)
 
       expect(returned_builder).to eq(builder)
     end
 
     it "returns the builder instance when given a block" do
       returned_builder = builder.start(MyFirstStep).divide(to: [MySecondStep, MyThirdStep]) do |b1, b2|
-        b1.combine(b2, into: MyFourthJob)
+        b1.combine(b2, into: MyFourthStep)
       end
 
       expect(returned_builder).to eq(builder)
@@ -119,7 +119,7 @@ RSpec.describe Ductwork::DefinitionBuilder do
       definition = builder
                    .start(MyFirstStep)
                    .divide(to: [MySecondStep, MyThirdStep])
-                   .combine(into: MyFourthJob)
+                   .combine(into: MyFourthStep)
                    .complete
 
       first_step = definition.branch.steps.sole
@@ -128,13 +128,13 @@ RSpec.describe Ductwork::DefinitionBuilder do
       expect(first_step.klass).to eq(MyFirstStep)
       expect(second_step.klass).to eq(MySecondStep)
       expect(third_step.klass).to eq(MyThirdStep)
-      expect(fourth_step.klass).to eq(MyFourthJob)
+      expect(fourth_step.klass).to eq(MyFourthStep)
     end
 
     it "merges multiple branches together into a new step" do
       definition = builder
                    .start(MyFirstStep)
-                   .divide(to: [MySecondStep, MyThirdStep, MyFourthJob])
+                   .divide(to: [MySecondStep, MyThirdStep, MyFourthStep])
                    .combine(into: MyFifthJob)
                    .complete
 
@@ -146,7 +146,7 @@ RSpec.describe Ductwork::DefinitionBuilder do
 
     it "merges the branches together into a new step when given a block" do
       definition = builder.start(MyFirstStep).divide(to: [MySecondStep, MyThirdStep]) do |b1, b2|
-        b1.combine(b2, into: MyFourthJob)
+        b1.combine(b2, into: MyFourthStep)
       end.complete
 
       first_step = definition.branch.steps.sole
@@ -155,7 +155,7 @@ RSpec.describe Ductwork::DefinitionBuilder do
       expect(first_step.klass).to eq(MyFirstStep)
       expect(second_step.klass).to eq(MySecondStep)
       expect(third_step.klass).to eq(MyThirdStep)
-      expect(fourth_step.klass).to eq(MyFourthJob)
+      expect(fourth_step.klass).to eq(MyFourthStep)
     end
 
     it "raises if pipeline has not been started" do
