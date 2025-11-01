@@ -70,5 +70,53 @@ module Ductwork
 
       job
     end
+
+    def execute(pipeline) # rubocop:disable Metrics/AbcSize
+      # i don't _really_ like this, but it should be fine for now...
+      execution = executions.order(:created_at).last
+      logger.debug(
+        msg: "Executing job",
+        role: :job_worker,
+        pipeline: pipeline,
+        job_klass: klass
+      )
+      instance = Object.const_get(klass).new(input_args)
+      run = execution.create_run!(
+        started_at: Time.current
+      )
+      begin
+        output_payload = instance.execute
+        Ductwork::Record.transaction do
+          update!(output_payload: output_payload)
+          run.update!(completed_at: Time.current)
+          execution.update!(completed_at: Time.current)
+        end
+        execution.create_result!(result_type: "success")
+      rescue StandardError => e
+        Ductwork::Record.transaction do
+          run.update!(completed_at: Time.current)
+          execution.update!(completed_at: Time.current)
+        end
+        execution.create_result!(
+          result_type: "failure",
+          error_klass: e.class.to_s,
+          error_message: e.message,
+          error_backtrace: e.backtrace
+        )
+      ensure
+        logger.debug(
+          msg: "Executed job",
+          role: :job_worker,
+          pipeline: pipeline,
+          job_klass: klass
+        )
+      end
+    end
+
+    private
+
+    def logger
+      Ductwork.configuration.logger
+    end
   end
 end

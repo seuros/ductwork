@@ -22,7 +22,7 @@ module Ductwork
         job = Job.claim_latest
 
         if job.present?
-          process_job(job)
+          job.execute(pipeline)
         else
           logger.debug(
             msg: "No job to claim, looping",
@@ -39,29 +39,6 @@ module Ductwork
     private
 
     attr_reader :pipeline, :running_context
-
-    def process_job(job)
-      logger.debug(
-        msg: "Executing job",
-        role: :job_worker,
-        pipeline: pipeline,
-        job_klass: job.klass
-      )
-      output_payload = Object.const_get(job.klass).new.execute(job.input_args)
-      logger.debug(
-        msg: "Executed job",
-        role: :job_worker,
-        pipeline: pipeline,
-        job_klass: job.klass
-      )
-      job.update!(output_payload: output_payload)
-      logger.debug(
-        msg: "Saved output payload",
-        role: :job_worker,
-        pipeline: pipeline,
-        job_klass: job.klass
-      )
-    end
 
     def shutdown
       logger.debug(

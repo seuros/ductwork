@@ -96,4 +96,77 @@ RSpec.describe Ductwork::Job do
       end.to change { execution.reload.process_id }.from(nil).to(::Process.pid)
     end
   end
+
+  describe "#execute!" do
+    subject(:job) do
+      described_class.create!(
+        klass: "MyFirstStep",
+        started_at: Time.current,
+        input_args:,
+        step:
+      )
+    end
+
+    let(:input_args) { JSON.dump(1) }
+    let(:step) { create(:step) }
+    let!(:execution) { create(:execution, job:) }
+
+    it "deserializes the step constant, initializes, and executes it" do
+      user_step = instance_double(MyFirstStep, execute: nil)
+      allow(MyFirstStep).to receive(:new).and_return(user_step)
+
+      job.execute(step.pipeline)
+
+      expect(MyFirstStep).to have_received(:new).with(job.input_args)
+      expect(user_step).to have_received(:execute)
+    end
+
+    it "updates the job record with the output payload" do
+      expect do
+        job.execute(step.pipeline)
+      end.to change(job, :output_payload).from(nil).to("return_value")
+    end
+
+    it "creates a run record" do
+      expect do
+        job.execute(step.pipeline)
+      end.to change(Ductwork::Run, :count).by(1)
+      run = Ductwork::Run.sole
+      expect(run.started_at).to be_within(1.second).of(Time.current)
+      expect(run.completed_at).to be_within(1.second).of(Time.current)
+    end
+
+    it "updates the timestamp on the execution" do
+      be_almost_now = be_within(1.second).of(Time.current)
+
+      expect do
+        job.execute(step.pipeline)
+      end.to change { execution.reload.completed_at }.from(nil).to(be_almost_now)
+    end
+
+    it "creates a success result record when execution succeeds" do
+      expect do
+        job.execute(step.pipeline)
+      end.to change(Ductwork::Result, :count).by(1)
+      result = Ductwork::Result.sole
+      expect(result.result_type).to eq("success")
+    end
+
+    it "creates a failure result record when execution fails" do
+      user_step = instance_double(MyFirstStep)
+      allow(user_step).to receive(:execute).and_raise(StandardError, "bad times")
+      allow(MyFirstStep).to receive(:new).and_return(user_step)
+
+      expect do
+        expect do
+          job.execute(step.pipeline)
+        end.not_to raise_error
+      end.to change(Ductwork::Result, :count).by(1)
+      result = Ductwork::Result.sole
+      expect(result.result_type).to eq("failure")
+      expect(result.error_klass).to eq("StandardError")
+      expect(result.error_message).to eq("bad times")
+      expect(result.error_backtrace).to be_present
+    end
+  end
 end
