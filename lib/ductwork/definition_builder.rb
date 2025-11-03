@@ -20,7 +20,8 @@ module Ductwork
       self
     end
 
-    # NOTE: there is a bug here that does not allow the user to reuse step classes in the same pipeline. i'll fix this
+    # NOTE: there is a bug here that does not allow the user to reuse step
+    # classes in the same pipeline. i'll fix this later
     def chain(klass)
       validate_definition_started!(action: "chaining")
       add_edge_to_last_node(klass, type: :chain)
