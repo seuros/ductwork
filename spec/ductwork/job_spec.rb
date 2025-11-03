@@ -35,18 +35,17 @@ RSpec.describe Ductwork::Job do
   end
 
   describe ".enqueue" do
-    let(:job_klass) { "MyFirstStep" }
     let(:step) { create(:step) }
     let(:args) { %i[foo bar] }
 
     it "creates a job record" do
       expect do
-        described_class.enqueue(job_klass, step, *args)
+        described_class.enqueue(step, *args)
       end.to change(described_class, :count).by(1)
         .and change(step, :job).from(nil)
 
       job = described_class.sole
-      expect(job.klass).to eq(job_klass)
+      expect(job.klass).to eq("MyFirstStep")
       expect(job.started_at).to be_within(1.second).of(Time.current)
       expect(job.completed_at).to be_nil
       expect(job.input_args).to eq(JSON.dump(args))
@@ -56,7 +55,7 @@ RSpec.describe Ductwork::Job do
 
     it "creates an execution record" do
       expect do
-        described_class.enqueue(job_klass, step, *args)
+        described_class.enqueue(step, *args)
       end.to change(Ductwork::Execution, :count).by(1)
 
       job = described_class.sole
@@ -67,7 +66,7 @@ RSpec.describe Ductwork::Job do
 
     it "creates an availability record" do
       expect do
-        described_class.enqueue(job_klass, step, *args)
+        described_class.enqueue(step, *args)
       end.to change(Ductwork::Availability, :count).by(1)
 
       execution = Ductwork::Execution.sole

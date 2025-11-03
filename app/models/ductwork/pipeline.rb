@@ -67,7 +67,7 @@ module Ductwork
             step_type: :start,
             started_at: Time.current
           )
-          Ductwork::Job.enqueue(step_klass, step, *args)
+          Ductwork::Job.enqueue(step, *args)
 
           pipeline
         end

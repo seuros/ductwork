@@ -55,9 +55,9 @@ module Ductwork
       end
     end
 
-    def self.enqueue(job_klass, step, *args)
+    def self.enqueue(step, *args)
       job = step.create_job!(
-        klass: job_klass,
+        klass: step.klass,
         started_at: Time.current,
         input_args: JSON.dump(args)
       )
