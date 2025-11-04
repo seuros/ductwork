@@ -107,7 +107,7 @@ RSpec.describe Ductwork::Job do
     end
 
     let(:input_args) { JSON.dump(1) }
-    let(:step) { create(:step) }
+    let(:step) { create(:step, status: :in_progress) }
     let!(:execution) { create(:execution, job:) }
 
     it "deserializes the step constant, initializes, and executes it" do
@@ -166,6 +166,22 @@ RSpec.describe Ductwork::Job do
       expect(result.error_klass).to eq("StandardError")
       expect(result.error_message).to eq("bad times")
       expect(result.error_backtrace).to be_present
+    end
+
+    it "marks the step as 'advancing' when the job execution completes" do
+      expect do
+        job.execute(step.pipeline)
+      end.to change { step.reload.status }.from("in_progress").to("advancing")
+    end
+
+    it "does not mark the step as 'advancing' if the job execution raises" do
+      user_step = instance_double(MyFirstStep)
+      allow(user_step).to receive(:execute).and_raise(StandardError, "bad times")
+      allow(MyFirstStep).to receive(:new).and_return(user_step)
+
+      expect do
+        job.execute(step.pipeline)
+      end.not_to change { step.reload.status }.from("in_progress")
     end
   end
 end

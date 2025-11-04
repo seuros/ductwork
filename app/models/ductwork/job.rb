@@ -71,7 +71,7 @@ module Ductwork
       job
     end
 
-    def execute(pipeline) # rubocop:disable Metrics/AbcSize
+    def execute(pipeline)
       # i don't _really_ like this, but it should be fine for now...
       execution = executions.order(:created_at).last
       logger.debug(
@@ -84,31 +84,22 @@ module Ductwork
       run = execution.create_run!(
         started_at: Time.current
       )
+      result = nil
+
       begin
         output_payload = instance.execute
-        Ductwork::Record.transaction do
-          update!(output_payload: output_payload)
-          run.update!(completed_at: Time.current)
-          execution.update!(completed_at: Time.current)
-        end
-        execution.create_result!(result_type: "success")
+        update_execution_succeeded!(execution, run, output_payload)
+        result = "success"
       rescue StandardError => e
-        Ductwork::Record.transaction do
-          run.update!(completed_at: Time.current)
-          execution.update!(completed_at: Time.current)
-        end
-        execution.create_result!(
-          result_type: "failure",
-          error_klass: e.class.to_s,
-          error_message: e.message,
-          error_backtrace: e.backtrace
-        )
+        update_execution_failed!(execution, run, e)
+        result = "failure"
       ensure
         logger.debug(
           msg: "Executed job",
           role: :job_worker,
           pipeline: pipeline,
-          job_klass: klass
+          job_klass: klass,
+          result: result
         )
       end
     end
@@ -117,6 +108,29 @@ module Ductwork
 
     def logger
       Ductwork.configuration.logger
+    end
+
+    def update_execution_succeeded!(execution, run, output_payload)
+      Ductwork::Record.transaction do
+        update!(output_payload: output_payload)
+        execution.update!(completed_at: Time.current)
+        run.update!(completed_at: Time.current)
+        execution.create_result!(result_type: "success")
+        step.update!(status: :advancing)
+      end
+    end
+
+    def update_execution_failed!(execution, run, error)
+      Ductwork::Record.transaction do
+        execution.update!(completed_at: Time.current)
+        run.update!(completed_at: Time.current)
+        execution.create_result!(
+          result_type: "failure",
+          error_klass: error.class.to_s,
+          error_message: error.message,
+          error_backtrace: error.backtrace
+        )
+      end
     end
   end
 end
