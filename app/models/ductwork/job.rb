@@ -112,7 +112,7 @@ module Ductwork
 
     def update_execution_succeeded!(execution, run, output_payload)
       Ductwork::Record.transaction do
-        update!(output_payload: output_payload)
+        update!(output_payload: output_payload, completed_at: Time.current)
         execution.update!(completed_at: Time.current)
         run.update!(completed_at: Time.current)
         execution.create_result!(result_type: "success")
