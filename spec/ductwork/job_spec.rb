@@ -124,6 +124,7 @@ RSpec.describe Ductwork::Job do
       expect do
         job.execute(step.pipeline)
       end.to change(job, :output_payload).from(nil).to("return_value")
+        .and change(job, :completed_at).from(nil).to(be_within(1.second).of(Time.current))
     end
 
     it "creates a run record" do
