@@ -54,6 +54,8 @@ module Ductwork
               )
               Ductwork::Job.enqueue(next_step, step.job.output_payload)
             end
+          elsif type == "combine"
+            # do combine lol
           elsif type == "expand"
             klass = to.sole
             payload = JSON.parse(step.job.output_payload)
@@ -67,10 +69,24 @@ module Ductwork
               )
               Ductwork::Job.enqueue(next_step, input_arg)
             end
-          elsif type == "combine"
-            # do combine lol
+          elsif type == "collapse"
+            if pipeline.steps.not_completed.where(klass: step.klass).none?
+              input_arg = Job.where(
+                step: pipeline.steps.completed.where(klass: step.klass)
+              ).pluck(:output_payload)
+
+              next_step = pipeline.steps.create!(
+                klass: to.sole,
+                status: :in_progress,
+                step_type: type,
+                started_at: Time.current
+              )
+              Ductwork::Job.enqueue(next_step, input_arg)
+            else
+              logger.debug(msg: "Not all expanded steps have completed", role: :pipeline_advancer)
+            end
           else
-            logger.error("Invalid step type? This is wrong lol")
+            logger.error("Invalid step type? This is wrong lol", role: :pipeline_advancer)
           end
         end
       end
