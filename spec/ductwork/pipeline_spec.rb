@@ -190,6 +190,30 @@ RSpec.describe Ductwork::Pipeline do
         .and change(Ductwork::Availability, :count).by(1)
     end
 
+    it "correctly passes an argument to the job" do
+      allow(Ductwork::Job).to receive(:enqueue)
+
+      klass.trigger(1)
+
+      expect(Ductwork::Job).to have_received(:enqueue).with(anything, 1)
+    end
+
+    it "correctly passes multiple arguments to the job" do
+      allow(Ductwork::Job).to receive(:enqueue)
+
+      klass.trigger(1, 2)
+
+      expect(Ductwork::Job).to have_received(:enqueue).with(anything, 1, 2)
+    end
+
+    it "correctly passes an array argument to the job" do
+      allow(Ductwork::Job).to receive(:enqueue)
+
+      klass.trigger([1, 2])
+
+      expect(Ductwork::Job).to have_received(:enqueue).with(anything, [1, 2])
+    end
+
     it "raises if pipeline not defined" do
       other_klass = Class.new(described_class) do
         def self.name

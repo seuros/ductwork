@@ -52,13 +52,14 @@ module Ductwork
         end
 
         step_klass = pipeline_definition.dig(:nodes, 0)
+        definition = JSON.dump(pipeline_definition)
 
         Record.transaction do
           pipeline = create!(
             klass: name.to_s,
             status: :in_progress,
-            definition: pipeline_definition.to_json,
-            definition_sha1: Digest::SHA1.hexdigest(pipeline_definition.to_json),
+            definition: definition,
+            definition_sha1: Digest::SHA1.hexdigest(definition),
             triggered_at: Time.current
           )
           step = pipeline.steps.create!(

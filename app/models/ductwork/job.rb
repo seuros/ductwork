@@ -55,11 +55,11 @@ module Ductwork
       end
     end
 
-    def self.enqueue(step, *args)
+    def self.enqueue(step, args)
       job = step.create_job!(
         klass: step.klass,
         started_at: Time.current,
-        input_args: JSON.dump(args)
+        input_args: JSON.dump({ args: args })
       )
       execution = job.executions.create!(
         started_at: Time.current
@@ -80,7 +80,8 @@ module Ductwork
         pipeline: pipeline,
         job_klass: klass
       )
-      instance = Object.const_get(klass).new(input_args)
+      args = JSON.parse(input_args)["args"]
+      instance = Object.const_get(klass).new(args)
       run = execution.create_run!(
         started_at: Time.current
       )
@@ -111,8 +112,10 @@ module Ductwork
     end
 
     def update_execution_succeeded!(execution, run, output_payload)
+      payload = JSON.dump({ payload: output_payload })
+
       Ductwork::Record.transaction do
-        update!(output_payload: output_payload, completed_at: Time.current)
+        update!(output_payload: payload, completed_at: Time.current)
         execution.update!(completed_at: Time.current)
         run.update!(completed_at: Time.current)
         execution.create_result!(result_type: "success")

@@ -40,7 +40,7 @@ RSpec.describe Ductwork::Job do
 
     it "creates a job record" do
       expect do
-        described_class.enqueue(step, *args)
+        described_class.enqueue(step, args)
       end.to change(described_class, :count).by(1)
         .and change(step, :job).from(nil)
 
@@ -48,14 +48,14 @@ RSpec.describe Ductwork::Job do
       expect(job.klass).to eq("MyFirstStep")
       expect(job.started_at).to be_within(1.second).of(Time.current)
       expect(job.completed_at).to be_nil
-      expect(job.input_args).to eq(JSON.dump(args))
+      expect(job.input_args).to eq(JSON.dump({ args: args }))
       expect(job.output_payload).to be_nil
       expect(job.step).to eq(step)
     end
 
     it "creates an execution record" do
       expect do
-        described_class.enqueue(step, *args)
+        described_class.enqueue(step, args)
       end.to change(Ductwork::Execution, :count).by(1)
 
       job = described_class.sole
@@ -66,7 +66,7 @@ RSpec.describe Ductwork::Job do
 
     it "creates an availability record" do
       expect do
-        described_class.enqueue(step, *args)
+        described_class.enqueue(step, args)
       end.to change(Ductwork::Availability, :count).by(1)
 
       execution = Ductwork::Execution.sole
@@ -106,7 +106,7 @@ RSpec.describe Ductwork::Job do
       )
     end
 
-    let(:input_args) { JSON.dump(1) }
+    let(:input_args) { JSON.dump({ args: 1 }) }
     let(:step) { create(:step, status: :in_progress) }
     let!(:execution) { create(:execution, job:) }
 
@@ -116,14 +116,16 @@ RSpec.describe Ductwork::Job do
 
       job.execute(step.pipeline)
 
-      expect(MyFirstStep).to have_received(:new).with(job.input_args)
+      expect(MyFirstStep).to have_received(:new).with(1)
       expect(user_step).to have_received(:execute)
     end
 
     it "updates the job record with the output payload" do
+      payload = JSON.dump(payload: "return_value")
+
       expect do
         job.execute(step.pipeline)
-      end.to change(job, :output_payload).from(nil).to("return_value")
+      end.to change(job, :output_payload).from(nil).to(payload)
         .and change(job, :completed_at).from(nil).to(be_within(1.second).of(Time.current))
     end
 

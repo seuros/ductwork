@@ -52,7 +52,9 @@ module Ductwork
                 step_type: type,
                 started_at: Time.current
               )
-              Ductwork::Job.enqueue(next_step, step.job.output_payload)
+              args = JSON.parse(step.job.output_payload)["payload"]
+
+              Ductwork::Job.enqueue(next_step, args)
             end
           elsif type == "combine"
             previous_klasses = definition[:edges].select do |_, v|
@@ -62,7 +64,9 @@ module Ductwork
             if pipeline.steps.not_completed.where(klass: previous_klasses).none?
               input_arg = Job.where(
                 step: pipeline.steps.completed.where(klass: previous_klasses)
-              ).pluck(:output_payload)
+              ).pluck(:output_payload).map do |payload|
+                JSON.parse(payload)["payload"]
+              end
               next_step = pipeline.steps.create!(
                 klass: to.sole,
                 status: :in_progress,
@@ -74,7 +78,7 @@ module Ductwork
             end
           elsif type == "expand"
             klass = to.sole
-            payload = JSON.parse(step.job.output_payload)
+            payload = JSON.parse(step.job.output_payload)["payload"]
 
             payload.each do |input_arg|
               next_step = pipeline.steps.create!(
@@ -89,7 +93,9 @@ module Ductwork
             if pipeline.steps.not_completed.where(klass: step.klass).none?
               input_arg = Job.where(
                 step: pipeline.steps.completed.where(klass: step.klass)
-              ).pluck(:output_payload)
+              ).pluck(:output_payload).map do |payload|
+                JSON.parse(payload)["payload"]
+              end
 
               next_step = pipeline.steps.create!(
                 klass: to.sole,
