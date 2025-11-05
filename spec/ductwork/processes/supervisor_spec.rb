@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Ductwork::Supervisor do
+RSpec.describe Ductwork::Processes::Supervisor do
   let(:supervisor) { described_class.new }
 
   after do

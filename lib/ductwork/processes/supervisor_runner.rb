@@ -4,7 +4,7 @@ module Ductwork
   module Processes
     class SupervisorRunner
       def self.start!
-        supervisor = Ductwork::Supervisor.new
+        supervisor = Ductwork::Processes::Supervisor.new
         pipelines_to_advance = Ductwork.configuration.pipelines
         logger = Ductwork.configuration.logger
 

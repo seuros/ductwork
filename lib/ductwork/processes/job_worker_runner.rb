@@ -39,7 +39,7 @@ module Ductwork
 
       def create_threads
         worker_count.times.map do
-          job_worker = Ductwork::JobWorker.new(
+          job_worker = Ductwork::Processes::JobWorker.new(
             pipeline,
             running_context
           )

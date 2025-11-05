@@ -5,13 +5,21 @@ RSpec.describe Ductwork::Processes::SupervisorRunner do
     it "creates workers for each configured pipeline" do
       pipelines = %w[PipelineA PipelineB]
       logger = instance_double(::Logger, debug: nil)
-      Ductwork.configuration = instance_double(Ductwork::Configuration, pipelines:, logger:)
-      supervisor = instance_double(Ductwork::Supervisor, add_worker: nil, run: nil)
-      allow(Ductwork::Supervisor).to receive(:new).and_return(supervisor)
+      Ductwork.configuration = instance_double(
+        Ductwork::Configuration,
+        pipelines:,
+        logger:
+      )
+      supervisor = instance_double(
+        Ductwork::Processes::Supervisor,
+        add_worker: nil,
+        run: nil
+      )
+      allow(Ductwork::Processes::Supervisor).to receive(:new).and_return(supervisor)
 
       described_class.start!
 
-      expect(Ductwork::Supervisor).to have_received(:new)
+      expect(Ductwork::Processes::Supervisor).to have_received(:new)
       expect(supervisor).to have_received(:add_worker)
         .with({ metadata: { pipelines: %w[PipelineA PipelineB] } }).once
       expect(supervisor).to have_received(:run)
