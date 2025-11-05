@@ -129,4 +129,28 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
     )
     expect(definition[:edges]["MySixthStep"]).to eq([])
   end
+
+  it "correctly handles reusing the same step class" do
+    definition = Class.new(Ductwork::Pipeline) do
+      define do |pipeline|
+        pipeline
+          .start(MyFirstStep)
+          .chain(MyFirstStep)
+          .expand(to: MyFirstStep)
+          .collapse(into: MyFirstStep)
+      end
+    end.pipeline_definition
+
+    expect(definition[:nodes]).to eq(
+      %w[MyFirstStep MyFirstStep MyFirstStep MyFirstStep]
+    )
+    expect(definition[:edges].length).to eq(1)
+    expect(definition[:edges]["MyFirstStep"]).to eq(
+      [
+        { to: ["MyFirstStep"], type: :chain },
+        { to: ["MyFirstStep"], type: :expand },
+        { to: ["MyFirstStep"], type: :collapse },
+      ]
+    )
+  end
 end

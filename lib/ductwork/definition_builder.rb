@@ -127,7 +127,7 @@ module Ductwork
     def add_new_nodes(*klasses)
       definition[:nodes].push(*klasses.map(&:name))
       klasses.each do |klass|
-        definition[:edges][klass.name] = []
+        definition[:edges][klass.name] ||= []
       end
     end
 
