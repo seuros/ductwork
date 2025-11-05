@@ -22,7 +22,7 @@ module Ductwork
           # confitional branching here that makes this a huge mess along
           # with random argument deserialization/serialization. slowly
           # cleaining this up
-          Ductwork::Record.transaction do
+          Ductwork::Record.transaction do # rubocop:disable Metrics/BlockLength
             step.update!(status: :completed, completed_at: Time.current)
 
             if edge.nil?
