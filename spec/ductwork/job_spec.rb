@@ -184,4 +184,34 @@ RSpec.describe Ductwork::Job do
       end.not_to change { step.reload.status }.from("in_progress")
     end
   end
+
+  describe "#return_value" do
+    subject(:job) { described_class.new(output_payload:) }
+
+    let(:output_payload) { { payload: }.to_json }
+
+    context "when the output payload holds a nil value" do
+      let(:payload) { nil }
+
+      it "returns nil" do
+        expect(job.return_value).to be_nil
+      end
+    end
+
+    context "when the output payload holds values" do
+      let(:payload) { %w[a b c] }
+
+      it "returns the value" do
+        expect(job.return_value).to eq(%w[a b c])
+      end
+    end
+
+    context "when the output payload is nil" do
+      let(:output_payload) { nil }
+
+      it "returns nil" do
+        expect(job.return_value).to be_nil
+      end
+    end
+  end
 end

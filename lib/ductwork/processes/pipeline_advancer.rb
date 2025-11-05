@@ -19,7 +19,7 @@ module Ductwork
           edge = definition.dig(:edges, step.klass, 0)
 
           # NOTE: sigh, apologies to anyone reading this... there's a lot of
-          # confitional branching here that makes this a huge mess along
+          # conditional branching here that makes this a huge mess along
           # with random argument deserialization/serialization. slowly
           # cleaining this up
           Ductwork::Record.transaction do # rubocop:disable Metrics/BlockLength
@@ -27,75 +27,59 @@ module Ductwork
 
             if edge.nil?
               if !pipeline.steps.where.not(status: :completed).exists?
-                pipeline.update!(status: "completed", completed_at: Time.current)
+                pipeline.update!(status: :completed, completed_at: Time.current)
               end
             else
-              type = edge[:type] == "chain" ? "default" : edge[:type]
-              to = edge[:to]
+              # NOTE: "chain" is used by ActiveRecord so we have to call
+              # this enum value "default" :sad:
+              step_type = edge[:type] == "chain" ? "default" : edge[:type]
 
-              if type.in?(%w[default divide])
-                to.each do |klass|
+              if step_type.in?(%w[default divide])
+                edge[:to].each do |klass|
                   next_step = pipeline.steps.create!(
                     klass: klass,
                     status: :in_progress,
-                    step_type: type,
+                    step_type: step_type,
                     started_at: Time.current
                   )
-                  payload = step.job.output_payload
-                  input_arg = if payload.present?
-                                JSON.parse(payload).fetch("payload", nil)
-                              end
-
-                  Ductwork::Job.enqueue(next_step, input_arg)
+                  Ductwork::Job.enqueue(next_step, step.job.return_value)
                 end
-              elsif type == "combine"
+              elsif step_type == "combine"
                 previous_klasses = definition[:edges].select do |_, v|
-                  v.dig(0, :to, 0) == to.sole && v.dig(0, :type) == "combine"
+                  v.dig(0, :to, 0) == edge[:to].sole && v.dig(0, :type) == "combine"
                 end.keys
 
                 if pipeline.steps.not_completed.where(klass: previous_klasses).none?
                   input_arg = Job.where(
                     step: pipeline.steps.completed.where(klass: previous_klasses)
-                  ).pluck(:output_payload).map do |payload|
-                    JSON.parse(payload)["payload"]
-                  end
-                  next_step = pipeline.steps.create!(
-                    klass: to.sole,
-                    status: :in_progress,
-                    step_type: type,
-                    started_at: Time.current
+                  ).map(&:return_value)
+                  create_step_and_enqueue_job(
+                    pipeline: pipeline,
+                    klass: edge[:to].sole,
+                    step_type: step_type,
+                    input_arg: input_arg
                   )
-
-                  Ductwork::Job.enqueue(next_step, input_arg)
                 end
-              elsif type == "expand"
-                klass = to.sole
-                payload = JSON.parse(step.job.output_payload)["payload"]
-
-                payload.each do |input_arg|
-                  next_step = pipeline.steps.create!(
-                    klass: klass,
-                    status: :in_progress,
-                    step_type: type,
-                    started_at: Time.current
+              elsif step_type == "expand"
+                step.job.return_value.each do |input_arg|
+                  create_step_and_enqueue_job(
+                    pipeline: pipeline,
+                    klass: edge[:to].sole,
+                    step_type: step_type,
+                    input_arg: input_arg
                   )
-                  Ductwork::Job.enqueue(next_step, input_arg)
                 end
-              elsif type == "collapse"
+              elsif step_type == "collapse"
                 if pipeline.steps.not_completed.where(klass: step.klass).none?
                   input_arg = Job.where(
                     step: pipeline.steps.completed.where(klass: step.klass)
-                  ).pluck(:output_payload).map do |payload|
-                    JSON.parse(payload)["payload"]
-                  end
-
-                  next_step = pipeline.steps.create!(
-                    klass: to.sole,
-                    status: :in_progress,
-                    step_type: type,
-                    started_at: Time.current
+                  ).map(&:return_value)
+                  create_step_and_enqueue_job(
+                    pipeline: pipeline,
+                    klass: edge[:to].sole,
+                    step_type: step_type,
+                    input_arg: input_arg
                   )
-                  Ductwork::Job.enqueue(next_step, input_arg)
                 else
                   logger.debug(msg: "Not all expanded steps have completed", role: :pipeline_advancer)
                 end
@@ -118,6 +102,16 @@ module Ductwork
           .advancing
           .joins(:pipeline)
           .where(ductwork_pipelines: { klass: klasses })
+      end
+
+      # NOTE: this probably should be a method on a model(s) or something
+      # because a job is always going to be enqueued when a new in-progress
+      # step is created :think:
+      def create_step_and_enqueue_job(pipeline:, klass:, step_type:, input_arg:)
+        status = :in_progress
+        started_at = Time.current
+        next_step = pipeline.steps.create!(klass:, status:, step_type:, started_at:)
+        Ductwork::Job.enqueue(next_step, input_arg)
       end
 
       def logger

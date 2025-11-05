@@ -107,6 +107,12 @@ module Ductwork
       end
     end
 
+    def return_value
+      if output_payload.present?
+        JSON.parse(output_payload).fetch("payload", nil)
+      end
+    end
+
     private
 
     def logger
