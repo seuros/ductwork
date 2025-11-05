@@ -10,7 +10,7 @@ module Ductwork
         Ductwork.configuration = Configuration.new(**options)
         Ductwork.configuration.logger = Ductwork::Configuration::DEFAULT_LOGGER
 
-        Ductwork::SupervisorRunner.start!
+        Ductwork::Processes::SupervisorRunner.start!
       end
 
       private

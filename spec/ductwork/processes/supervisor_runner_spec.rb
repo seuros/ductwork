@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Ductwork::SupervisorRunner do
+RSpec.describe Ductwork::Processes::SupervisorRunner do
   describe ".start!" do
     it "creates workers for each configured pipeline" do
       pipelines = %w[PipelineA PipelineB]
