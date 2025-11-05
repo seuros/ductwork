@@ -19,7 +19,7 @@ module Ductwork
       }
 
       definition[:nodes].push(next_klass.name)
-      definition[:edges][next_klass.name] = []
+      definition[:edges][next_klass.name] ||= []
       @last_node = next_klass.name
 
       self
@@ -33,7 +33,7 @@ module Ductwork
 
       definition[:nodes].push(*to.map(&:name))
       sub_branches = to.map do |klass|
-        definition[:edges][klass.name] = []
+        definition[:edges][klass.name] ||= []
 
         Ductwork::BranchBuilder.new(klass:, definition:)
       end
@@ -55,7 +55,7 @@ module Ductwork
         }
       end
       definition[:nodes].push(into.name)
-      definition[:edges][into.name] = []
+      definition[:edges][into.name] ||= []
 
       self
     end
@@ -67,7 +67,7 @@ module Ductwork
       }
 
       definition[:nodes].push(to.name)
-      definition[:edges][to.name] = []
+      definition[:edges][to.name] ||= []
       @last_node = to.name
       @expansions += 1
 
@@ -86,7 +86,7 @@ module Ductwork
       }
 
       definition[:nodes].push(into.name)
-      definition[:edges][into.name] = []
+      definition[:edges][into.name] ||= []
       @last_node = into.name
       @expansions -= 1
 
