@@ -20,7 +20,7 @@ module Ductwork
         block.call(metadata)
       end
 
-      workers << { metadata: metadata, pid: pid, block: block }
+      workers << { metadata:, pid:, block: }
       logger.debug(
         msg: "Started child process (#{pid}) with metadata #{metadata}",
         pid: pid
@@ -131,7 +131,7 @@ module Ductwork
       machine_identifier = Ductwork::MachineIdentifier.fetch
 
       Ductwork::Process
-        .where(pid: pid, machine_identifier: machine_identifier)
+        .where(pid:, machine_identifier:)
         .where("last_heartbeat_at < ?", 5.minutes.ago)
         .exists?
     end

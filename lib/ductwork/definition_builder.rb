@@ -38,7 +38,7 @@ module Ductwork
       if block_given?
         branches = to.map do |klass|
           Ductwork::BranchBuilder
-            .new(klass: klass, definition: definition)
+            .new(klass:, definition:)
         end
 
         yield branches

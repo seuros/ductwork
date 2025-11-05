@@ -52,6 +52,9 @@ Style/EmptyElse:
 Style/GuardClause:
   Enabled: false
 
+Style/HashSyntax:
+  EnforcedShorthandSyntax: consistent
+
 Style/IfUnlessModifier:
   Enabled: false
 

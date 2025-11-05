@@ -2,8 +2,9 @@
 
 RSpec.describe Ductwork::BranchBuilder do
   describe "#chain" do
-    subject(:builder) { described_class.new(klass: MyFirstStep, definition:) }
+    subject(:builder) { described_class.new(klass:, definition:) }
 
+    let(:klass) { MyFirstStep }
     # NOTE: we can assume the definition has at least this state because
     # this class is only used in the `DefinitionBuilder`
     let(:definition) do
@@ -35,8 +36,9 @@ RSpec.describe Ductwork::BranchBuilder do
   end
 
   describe "#divide" do
-    subject(:builder) { described_class.new(klass: MyFirstStep, definition:) }
+    subject(:builder) { described_class.new(klass:, definition:) }
 
+    let(:klass) { MyFirstStep }
     # NOTE: we can assume the definition has at least this state because
     # this class is only used in the `DefinitionBuilder`
     let(:definition) do
@@ -75,9 +77,12 @@ RSpec.describe Ductwork::BranchBuilder do
   end
 
   describe "#combine" do
-    subject(:builder) { described_class.new(klass: MyFirstStep, definition:) }
+    subject(:builder) { described_class.new(klass:, definition:) }
 
-    let(:other_builder) { described_class.new(klass: MySecondStep, definition:) }
+    let(:other_builder) do
+      described_class.new(klass: MySecondStep, definition: definition)
+    end
+    let(:klass) { MyFirstStep }
     # NOTE: we can assume the definition has at least this state because
     # this class is only used in the `DefinitionBuilder`
     let(:definition) do
@@ -110,9 +115,9 @@ RSpec.describe Ductwork::BranchBuilder do
 
     it "combines multiple branch builders into the given step" do
       builder, *other_builders = [
-        described_class.new(klass: MyFirstStep, definition:),
-        described_class.new(klass: MySecondStep, definition:),
-        described_class.new(klass: MyThirdStep, definition:),
+        described_class.new(klass: MyFirstStep, definition: definition),
+        described_class.new(klass: MySecondStep, definition: definition),
+        described_class.new(klass: MyThirdStep, definition: definition),
       ]
       definition[:nodes].push("MyThirdStep")
       definition[:edges]["MyThirdStep"] = []
@@ -133,8 +138,9 @@ RSpec.describe Ductwork::BranchBuilder do
   end
 
   describe "#expand" do
-    subject(:builder) { described_class.new(klass: MyFirstStep, definition:) }
+    subject(:builder) { described_class.new(klass:, definition:) }
 
+    let(:klass) { MyFirstStep }
     # NOTE: we can assume the definition has at least this state because
     # this class is only used in the `DefinitionBuilder`
     let(:definition) do
@@ -166,8 +172,9 @@ RSpec.describe Ductwork::BranchBuilder do
   end
 
   describe "#collapse" do
-    subject(:builder) { described_class.new(klass: MyFirstStep, definition:) }
+    subject(:builder) { described_class.new(klass:, definition:) }
 
+    let(:klass) { MyFirstStep }
     # NOTE: we can assume the definition has at least this state because
     # this class is only used in the `DefinitionBuilder`
     let(:definition) do
@@ -211,7 +218,7 @@ RSpec.describe Ductwork::BranchBuilder do
         nodes: %w[MyFirstStep],
         edges: { "MyFirstStep" => [] },
       }
-      builder = described_class.new(klass: MyFirstStep, definition:)
+      builder = described_class.new(klass: MyFirstStep, definition: definition)
 
       expect do
         builder.collapse(into: MySecondStep)

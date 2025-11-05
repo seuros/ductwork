@@ -35,7 +35,7 @@ module Ductwork
       sub_branches = to.map do |klass|
         definition[:edges][klass.name] = []
 
-        Ductwork::BranchBuilder.new(klass: klass, definition: definition)
+        Ductwork::BranchBuilder.new(klass:, definition:)
       end
 
       yield sub_branches

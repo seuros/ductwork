@@ -6,7 +6,7 @@ RSpec.describe Ductwork::StepDefinition do
 
   describe "#klass" do
     it "returns the value" do
-      step = described_class.new(klass: klass, type: type)
+      step = described_class.new(klass:, type:)
 
       expect(step.klass).to eq(klass)
     end
@@ -14,7 +14,7 @@ RSpec.describe Ductwork::StepDefinition do
 
   describe "#type" do
     it "returns the value" do
-      step = described_class.new(klass: klass, type: type)
+      step = described_class.new(klass:, type:)
 
       expect(step.type).to eq(type)
     end

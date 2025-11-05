@@ -48,7 +48,7 @@ RSpec.describe Ductwork::Job do
       expect(job.klass).to eq("MyFirstStep")
       expect(job.started_at).to be_within(1.second).of(Time.current)
       expect(job.completed_at).to be_nil
-      expect(job.input_args).to eq(JSON.dump({ args: args }))
+      expect(job.input_args).to eq(JSON.dump({ args: }))
       expect(job.output_payload).to be_nil
       expect(job.step).to eq(step)
     end
@@ -98,14 +98,11 @@ RSpec.describe Ductwork::Job do
 
   describe "#execute!" do
     subject(:job) do
-      described_class.create!(
-        klass: "MyFirstStep",
-        started_at: Time.current,
-        input_args:,
-        step:
-      )
+      described_class.create!(klass:, started_at:, input_args:, step:)
     end
 
+    let(:klass) { "MyFirstStep" }
+    let(:started_at) { Time.current }
     let(:input_args) { JSON.dump({ args: 1 }) }
     let(:step) { create(:step, status: :in_progress) }
     let!(:execution) { create(:execution, job:) }

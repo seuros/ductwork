@@ -7,6 +7,15 @@ RSpec.describe Ductwork::Process do
   rescue Errno::ENOENT
     Socket.gethostname
   end
+  let(:other_process) do
+    machine_identifier = "foobar"
+
+    described_class.create!(
+      pid:,
+      machine_identifier:,
+      last_heartbeat_at:
+    )
+  end
 
   describe "validations" do
     let(:last_heartbeat_at) { Time.current }
@@ -21,7 +30,7 @@ RSpec.describe Ductwork::Process do
     end
 
     it "is valid otherwise" do
-      described_class.create!(pid:, machine_identifier: "foo", last_heartbeat_at:)
+      other_process
 
       process = described_class.new(pid:, machine_identifier:, last_heartbeat_at:)
 
@@ -31,10 +40,11 @@ RSpec.describe Ductwork::Process do
 
   describe ".report_heartbeat!" do
     it "updates the heartbeat timestamp" do
+      last_heartbeat_at = 1.day.ago
       process = described_class.create!(
         pid:,
         machine_identifier:,
-        last_heartbeat_at: 1.day.ago
+        last_heartbeat_at:
       )
 
       expect do
@@ -46,13 +56,13 @@ RSpec.describe Ductwork::Process do
 
     it "queries the record by pid and machine identifier" do
       described_class.create!(
-        pid:,
+        pid: pid,
         machine_identifier: "foobar",
         last_heartbeat_at: 1.day.ago
       )
       process = described_class.create!(
-        pid:,
-        machine_identifier:,
+        pid: pid,
+        machine_identifier: machine_identifier,
         last_heartbeat_at: 1.day.ago
       )
 

@@ -24,13 +24,13 @@ module Ductwork
         rows_updated = nil
         Ductwork::Record.transaction do
           rows_updated = Ductwork::Availability
-                         .where(id:, completed_at: nil)
-                         .update_all(completed_at: Time.current, process_id:)
+                         .where(id: id, completed_at: nil)
+                         .update_all(completed_at: Time.current, process_id: process_id)
           Ductwork::Execution
             .joins(:availability)
             .where(completed_at: nil)
-            .where(ductwork_availabilities: { id: id })
-            .update_all(process_id: process_id)
+            .where(ductwork_availabilities: { id: })
+            .update_all(process_id:)
         end
 
         if rows_updated == 1
@@ -60,7 +60,7 @@ module Ductwork
         job = step.create_job!(
           klass: step.klass,
           started_at: Time.current,
-          input_args: JSON.dump({ args: args })
+          input_args: JSON.dump({ args: })
         )
         execution = job.executions.create!(
           started_at: Time.current
