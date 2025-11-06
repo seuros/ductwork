@@ -14,7 +14,9 @@ module Ductwork
     PIPELINES_WILDCARD = "*"
 
     attr_accessor :logger
-    attr_writer :supervisor_shutdown_timeout
+    attr_writer :job_worker_polling_timeout, :job_worker_shutdown_timeout,
+                :pipeline_polling_timeout, :supervisor_polling_timeout,
+                :supervisor_shutdown_timeout
 
     def initialize(path: DEFAULT_FILE_PATH)
       full_path = Pathname.new(path)
@@ -48,23 +50,19 @@ module Ductwork
     end
 
     def job_worker_polling_timeout
-      config.dig(:job_worker, :polling_timeout) ||
-        DEFAULT_JOB_WORKER_POLLING_TIMEOUT
+      @job_worker_polling_timeout ||= fetch_job_worker_polling_timeout
     end
 
     def job_worker_shutdown_timeout
-      config.dig(:job_worker, :shutdown_timeout) ||
-        DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT
+      @job_worker_shutdown_timeout ||= fetch_job_worker_shutdown_timeout
     end
 
     def pipeline_polling_timeout
-      config.dig(:pipeline, :polling_timeout) ||
-        DEFAULT_PIPELINE_POLLING_TIMEOUT
+      @pipeline_polling_timeout ||= fetch_pipeline_polling_timeout
     end
 
     def supervisor_polling_timeout
-      config.dig(:supervisor, :polling_timeout) ||
-        DEFAULT_SUPERVISOR_POLLING_TIMEOUT
+      @supervisor_polling_timeout ||= fetch_supervisor_polling_timeout
     end
 
     def supervisor_shutdown_timeout
@@ -74,6 +72,26 @@ module Ductwork
     private
 
     attr_reader :config
+
+    def fetch_job_worker_polling_timeout
+      config.dig(:job_worker, :polling_timeout) ||
+        DEFAULT_JOB_WORKER_POLLING_TIMEOUT
+    end
+
+    def fetch_job_worker_shutdown_timeout
+      config.dig(:job_worker, :shutdown_timeout) ||
+        DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT
+    end
+
+    def fetch_pipeline_polling_timeout
+      config.dig(:pipeline, :polling_timeout) ||
+        DEFAULT_PIPELINE_POLLING_TIMEOUT
+    end
+
+    def fetch_supervisor_polling_timeout
+      config.dig(:supervisor, :polling_timeout) ||
+        DEFAULT_SUPERVISOR_POLLING_TIMEOUT
+    end
 
     def fetch_supervisor_shutdown_timeout
       config.dig(:supervisor, :shutdown_timeout) ||
