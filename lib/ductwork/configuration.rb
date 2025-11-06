@@ -5,6 +5,7 @@ module Ductwork
     DEFAULT_ENV = :default
     DEFAULT_FILE_PATH = "config/ductwork.yml"
     DEFAULT_JOB_WORKER_COUNT = 5 # threads
+    DEFAULT_JOB_WORKER_POLLING_TIMEOUT = 1 # second
     DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT = 20 # seconds
     DEFAULT_LOGGER = ::Logger.new($stdout)
     PIPELINES_WILDCARD = "*"
@@ -40,6 +41,11 @@ module Ductwork
       else
         raw_count
       end
+    end
+
+    def job_worker_polling_timeout
+      config.dig(:job_worker, :polling_timeout) ||
+        DEFAULT_JOB_WORKER_POLLING_TIMEOUT
     end
 
     def job_worker_shutdown_timeout
