@@ -6,6 +6,8 @@ default: &default
     shutdown_timeout: 20
   pipeline:
     polling_timeout: 1
+  supervisor:
+    polling_timeout: 1
 
 development:
   <<: *default

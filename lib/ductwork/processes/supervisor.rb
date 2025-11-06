@@ -32,7 +32,7 @@ module Ductwork
         logger.debug(msg: "Entering main work loop", role: :supervisor, pid: ::Process.pid)
 
         while running
-          sleep(1)
+          sleep(Ductwork.configuration.supervisor_polling_timeout)
           check_workers
         end
 
