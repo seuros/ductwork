@@ -188,6 +188,41 @@ RSpec.describe Ductwork::Configuration do
     end
   end
 
+  describe "#pipeline_polling_timeout" do
+    context "when the config file exists" do
+      let(:data) do
+        <<~DATA
+          default: &default
+            pipeline:
+              polling_timeout: 2
+
+          test:
+            <<: *default
+        DATA
+      end
+
+      before do
+        create_default_config_file
+      end
+
+      it "returns the timeout" do
+        config = described_class.new
+
+        expect(config.pipeline_polling_timeout).to eq(2)
+      end
+    end
+
+    context "when no config file exists" do
+      it "returns the default" do
+        config = described_class.new
+
+        expect(config.pipeline_polling_timeout).to eq(
+          described_class::DEFAULT_PIPELINE_POLLING_TIMEOUT
+        )
+      end
+    end
+  end
+
   def create_temp_file
     Tempfile.new("ductwork.yml").tap do |file|
       file.write(data)

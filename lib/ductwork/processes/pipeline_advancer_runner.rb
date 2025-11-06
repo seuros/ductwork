@@ -18,7 +18,7 @@ module Ductwork
         while running_context.running?
           advance_all_pipelines
           report_heartbeat!
-          sleep(1)
+          sleep(Ductwork.configuration.pipeline_polling_timeout)
         end
 
         shutdown

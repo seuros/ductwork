@@ -4,6 +4,8 @@ default: &default
     count: 5
     polling_timeout: 1
     shutdown_timeout: 20
+  pipeline:
+    polling_timeout: 1
 
 development:
   <<: *default
