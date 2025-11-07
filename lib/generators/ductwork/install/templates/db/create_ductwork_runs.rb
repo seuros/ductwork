@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateDuctworkRuns < ActiveRecord::Migration[7.0]
+class CreateDuctworkRuns < ActiveRecord::Migration[<%= Rails::VERSION::MAJOR %>.<%= Rails::VERSION::MINOR %>]
   def change
     create_table :ductwork_runs do |table|
       table.belongs_to :execution, index: false, null: false, foreign_key: { to_table: :ductwork_executions }

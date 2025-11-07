@@ -12,6 +12,7 @@ AllCops:
   Exclude:
     - Appraisals
     - gemfiles/**/*
+    - lib/generators/ductwork/install/templates/db/*.rb
     - vendor/**/*
 
 Layout/MultilineMethodCallIndentation:
