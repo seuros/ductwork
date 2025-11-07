@@ -156,6 +156,7 @@ module Ductwork
           )
         elsif execution.retry_count >= Ductwork.configuration.job_worker_max_retry
           pipeline.halted!
+          # trigger `on_halt` if configured
         end
       end
     end

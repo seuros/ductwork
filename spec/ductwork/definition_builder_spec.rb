@@ -334,6 +334,21 @@ RSpec.describe Ductwork::DefinitionBuilder do
     end
   end
 
+  describe "#on_halt" do
+    it "returns the builder instance" do
+      returned_builder = builder.on_halt(MyHaltStep)
+
+      expect(returned_builder).to eq(builder)
+    end
+
+    it "adds the on halt klass to the definition as metadata" do
+      definition = builder.start(MyFirstStep).on_halt(MyHaltStep).complete
+
+      expect(definition[:nodes]).to eq(["MyFirstStep"])
+      expect(definition[:metadata]).to eq(on_halt: { klass: "MyHaltStep" })
+    end
+  end
+
   describe "#complete" do
     it "raises if pipeline has not been started" do
       expect do

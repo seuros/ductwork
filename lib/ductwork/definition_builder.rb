@@ -82,6 +82,14 @@ module Ductwork
       self
     end
 
+    def on_halt(klass)
+      definition[:metadata] ||= {}
+      definition[:metadata][:on_halt] = {}
+      definition[:metadata][:on_halt][:klass] = klass.name
+
+      self
+    end
+
     def complete
       validate_definition_started!(action: "completing")
 
