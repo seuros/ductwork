@@ -13,6 +13,7 @@ module Ductwork
     enum :status,
          pending: "pending",
          in_progress: "in_progress",
+         halted: "halted",
          completed: "completed"
 
     def self.inherited(subclass)

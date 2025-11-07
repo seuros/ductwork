@@ -98,7 +98,7 @@ module Ductwork
         update_execution_succeeded!(execution, run, output_payload)
         result = "success"
       rescue StandardError => e
-        update_execution_failed!(execution, run, e)
+        update_execution_failed!(pipeline, execution, run, e)
         result = "failure"
       ensure
         logger.debug(
@@ -135,7 +135,7 @@ module Ductwork
       end
     end
 
-    def update_execution_failed!(execution, run, error)
+    def update_execution_failed!(pipeline, execution, run, error)
       Ductwork::Record.transaction do
         execution.update!(completed_at: Time.current)
         run.update!(completed_at: Time.current)
@@ -154,6 +154,8 @@ module Ductwork
           new_execution.create_availability!(
             started_at: FAILED_EXECUTION_TIMEOUT.from_now
           )
+        elsif execution.retry_count >= Ductwork.configuration.job_worker_max_retry
+          pipeline.halted!
         end
       end
     end
