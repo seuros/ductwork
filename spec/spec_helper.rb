@@ -41,6 +41,7 @@ RSpec.configure do |config|
   end
 
   config.after do
-    Ductwork.reset!
+    Ductwork.configuration = nil
+    Ductwork.defined_pipelines = nil
   end
 end

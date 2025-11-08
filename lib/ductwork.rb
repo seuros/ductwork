@@ -18,6 +18,7 @@ loader.setup
 module Ductwork
   class << self
     attr_accessor :app_executor, :configuration
+    attr_writer :defined_pipelines
 
     def wrap_with_app_executor(&block)
       if app_executor.present?
@@ -29,12 +30,6 @@ module Ductwork
 
     def defined_pipelines
       @defined_pipelines ||= []
-    end
-
-    # NOTE: this is test interface only
-    def reset!
-      @defined_pipelines = nil
-      @configuration = nil
     end
   end
 end
