@@ -63,11 +63,13 @@ module Ductwork
       end
 
       def create_process!
-        Ductwork::Process.create!(
-          pid: ::Process.pid,
-          machine_identifier: Ductwork::MachineIdentifier.fetch,
-          last_heartbeat_at: Time.current
-        )
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process.create!(
+            pid: ::Process.pid,
+            machine_identifier: Ductwork::MachineIdentifier.fetch,
+            last_heartbeat_at: Time.current
+          )
+        end
       end
 
       def running?
@@ -90,7 +92,9 @@ module Ductwork
 
       def report_heartbeat!
         logger.debug(msg: "Reporting heartbeat", role: :job_worker_runner)
-        Ductwork::Process.report_heartbeat!
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process.report_heartbeat!
+        end
         logger.debug(msg: "Reported heartbeat", role: :job_worker_runner)
       end
 
@@ -125,10 +129,12 @@ module Ductwork
       end
 
       def delete_process
-        Ductwork::Process.find_by!(
-          pid: ::Process.pid,
-          machine_identifier: Ductwork::MachineIdentifier.fetch
-        ).delete
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process.find_by!(
+            pid: ::Process.pid,
+            machine_identifier: Ductwork::MachineIdentifier.fetch
+          ).delete
+        end
       end
 
       def logger

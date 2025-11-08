@@ -17,7 +17,15 @@ loader.setup
 
 module Ductwork
   class << self
-    attr_accessor :configuration
+    attr_accessor :app_executor, :configuration
+
+    def wrap_with_app_executor(&block)
+      if app_executor.present?
+        app_executor.wrap(&block)
+      else
+        yield
+      end
+    end
 
     def defined_pipelines
       @defined_pipelines ||= []

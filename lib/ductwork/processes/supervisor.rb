@@ -130,10 +130,12 @@ module Ductwork
       def process_dead?(pid)
         machine_identifier = Ductwork::MachineIdentifier.fetch
 
-        Ductwork::Process
-          .where(pid:, machine_identifier:)
-          .where("last_heartbeat_at < ?", 5.minutes.ago)
-          .exists?
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process
+            .where(pid:, machine_identifier:)
+            .where("last_heartbeat_at < ?", 5.minutes.ago)
+            .exists?
+        end
       end
 
       def now

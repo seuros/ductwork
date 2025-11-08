@@ -29,11 +29,13 @@ module Ductwork
       attr_reader :klasses, :running_context
 
       def create_process!
-        Ductwork::Process.create!(
-          pid: ::Process.pid,
-          machine_identifier: Ductwork::MachineIdentifier.fetch,
-          last_heartbeat_at: Time.current
-        )
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process.create!(
+            pid: ::Process.pid,
+            machine_identifier: Ductwork::MachineIdentifier.fetch,
+            last_heartbeat_at: Time.current
+          )
+        end
       end
 
       def advance_all_pipelines
@@ -44,17 +46,21 @@ module Ductwork
 
       def report_heartbeat!
         logger.debug(msg: "Reporting heartbeat", role: :pipeline_advancer)
-        Ductwork::Process.report_heartbeat!
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process.report_heartbeat!
+        end
         logger.debug(msg: "Reported heartbeat", role: :pipeline_advancer)
       end
 
       def shutdown
         logger.debug(msg: "Shutting down", role: :pipeline_advancer)
 
-        Ductwork::Process.find_by!(
-          pid: ::Process.pid,
-          machine_identifier: Ductwork::MachineIdentifier.fetch
-        ).delete
+        Ductwork.wrap_with_app_executor do
+          Ductwork::Process.find_by!(
+            pid: ::Process.pid,
+            machine_identifier: Ductwork::MachineIdentifier.fetch
+          ).delete
+        end
 
         logger.debug(msg: "Process deleted", role: :pipeline_advancer)
       end

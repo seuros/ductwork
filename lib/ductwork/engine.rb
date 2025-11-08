@@ -2,7 +2,11 @@
 
 module Ductwork
   class Engine < ::Rails::Engine
-    initializer "configure" do
+    initializer "ductwork.app_executor", before: :run_prepare_callbacks do |app|
+      Ductwork.app_executor = app.executor
+    end
+
+    initializer "ductwork.configure" do
       Ductwork.configuration ||= Ductwork::Configuration.new
       Ductwork.configuration.logger ||= Ductwork::Configuration::DEFAULT_LOGGER
     end

@@ -31,6 +31,9 @@ Metrics/MethodLength:
 Metrics/AbcSize:
   Max: 30
 
+Naming/BlockForwarding:
+  EnforcedStyle: explicit
+
 Naming/MemoizedInstanceVariableName:
   EnforcedStyleForLeadingUnderscores: optional
 
