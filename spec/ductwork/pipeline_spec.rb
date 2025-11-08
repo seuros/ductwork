@@ -116,8 +116,8 @@ RSpec.describe Ductwork::Pipeline do
     end
 
     it "yields a definition builder to the block" do
-      builder = instance_double(Ductwork::DefinitionBuilder, complete: nil)
-      allow(Ductwork::DefinitionBuilder).to receive(:new).and_return(builder)
+      builder = instance_double(Ductwork::DSL::DefinitionBuilder, complete: nil)
+      allow(Ductwork::DSL::DefinitionBuilder).to receive(:new).and_return(builder)
 
       expect do |block|
         klass.define(&block)

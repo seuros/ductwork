@@ -11,6 +11,7 @@ require "ductwork/engine"
 
 loader = Zeitwerk::Loader.for_gem
 loader.inflector.inflect("cli" => "CLI")
+loader.inflector.inflect("dsl" => "DSL")
 loader.ignore("#{__dir__}/generators")
 loader.setup
 

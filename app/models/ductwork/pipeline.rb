@@ -38,7 +38,7 @@ module Ductwork
           raise DefinitionError, "Pipeline has already been defined"
         end
 
-        builder = DefinitionBuilder.new
+        builder = Ductwork::DSL::DefinitionBuilder.new
 
         block.call(builder)
 

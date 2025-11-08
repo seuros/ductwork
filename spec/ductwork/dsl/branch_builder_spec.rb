@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Ductwork::BranchBuilder do
+RSpec.describe Ductwork::DSL::BranchBuilder do
   describe "#chain" do
     subject(:builder) { described_class.new(klass:, definition:) }
 

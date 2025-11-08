@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Ductwork::DefinitionBuilder do
+RSpec.describe Ductwork::DSL::DefinitionBuilder do
   let(:builder) { described_class.new }
 
   describe "#start" do
