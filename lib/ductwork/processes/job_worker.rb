@@ -20,10 +20,14 @@ module Ductwork
             role: :job_worker,
             pipeline: pipeline
           )
-          job = Job.claim_latest
+          job = Ductwork.wrap_with_app_executor do
+            Job.claim_latest
+          end
 
           if job.present?
-            job.execute(pipeline)
+            Ductwork.wrap_with_app_executor do
+              job.execute(pipeline)
+            end
           else
             logger.debug(
               msg: "No job to claim, looping",
