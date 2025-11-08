@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Ductwork do
+  let(:block) { -> { puts "hi" } }
+
   it "has a version number" do
     expect(Ductwork::VERSION).not_to be_nil
   end
@@ -25,6 +27,68 @@ RSpec.describe Ductwork do
 
         expect(executor).to have_received(:wrap).with(&block)
       end
+    end
+  end
+
+  describe ".hooks" do
+    it "returns an empty set of hooks if nothing is configured" do
+      described_class.hooks = nil
+
+      expect(described_class.hooks).to eq(
+        {
+          supervisor: { start: [], stop: [] },
+          advancer: { start: [], stop: [] },
+          worker: { start: [], stop: [] },
+        }
+      )
+    end
+  end
+
+  describe ".on_supervisor_start" do
+    it "adds the block to the collection of lifecycle hooks" do
+      described_class.on_supervisor_start(&block)
+
+      expect(described_class.hooks.dig(:supervisor, :start)).to eq([block])
+    end
+  end
+
+  describe ".on_supervisor_stop" do
+    it "adds the block to the collection of lifecycle hooks" do
+      described_class.on_supervisor_stop(&block)
+
+      expect(described_class.hooks.dig(:supervisor, :stop)).to eq([block])
+    end
+  end
+
+  describe ".on_advancer_start" do
+    it "adds the block to the collection of lifecycle hooks" do
+      described_class.on_advancer_start(&block)
+
+      expect(described_class.hooks.dig(:advancer, :start)).to eq([block])
+    end
+  end
+
+  describe ".on_advancer_stop" do
+    it "adds the block to the collection of lifecycle hooks" do
+      described_class.on_advancer_stop(&block)
+
+      expect(described_class.hooks.dig(:advancer, :stop)).to eq([block])
+    end
+  end
+
+  describe ".on_worker_start" do
+    it "adds the block to the collection of lifecycle hooks" do
+      described_class.on_worker_start(&block)
+
+      expect(described_class.hooks.dig(:worker, :start)).to eq([block])
+    end
+  end
+
+  describe ".on_worker_stop" do
+    it "adds the block to the collection of lifecycle hooks" do
+      described_class.on_worker_stop(&block)
+
+      expect(described_class.hooks.dig(:worker, :stop)).to eq([block])
     end
   end
 

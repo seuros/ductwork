@@ -18,7 +18,7 @@ loader.setup
 module Ductwork
   class << self
     attr_accessor :app_executor, :configuration
-    attr_writer :defined_pipelines
+    attr_writer :defined_pipelines, :hooks
 
     def wrap_with_app_executor(&block)
       if app_executor.present?
@@ -28,8 +28,48 @@ module Ductwork
       end
     end
 
+    def hooks
+      @hooks ||= {
+        supervisor: { start: [], stop: [] },
+        advancer: { start: [], stop: [] },
+        worker: { start: [], stop: [] },
+      }
+    end
+
+    def on_supervisor_start(&block)
+      add_lifecycle_hook(:supervisor, :start, block)
+    end
+
+    def on_supervisor_stop(&block)
+      add_lifecycle_hook(:supervisor, :stop, block)
+    end
+
+    def on_advancer_start(&block)
+      add_lifecycle_hook(:advancer, :start, block)
+    end
+
+    def on_advancer_stop(&block)
+      add_lifecycle_hook(:advancer, :stop, block)
+    end
+
+    def on_worker_start(&block)
+      add_lifecycle_hook(:worker, :start, block)
+    end
+
+    def on_worker_stop(&block)
+      add_lifecycle_hook(:worker, :stop, block)
+    end
+
     def defined_pipelines
       @defined_pipelines ||= []
+    end
+
+    private
+
+    def add_lifecycle_hook(target, event, block)
+      hooks[target] ||= {}
+      hooks[target][event] ||= []
+      hooks[target][event].push(block)
     end
   end
 end

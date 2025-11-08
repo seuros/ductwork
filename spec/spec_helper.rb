@@ -44,5 +44,6 @@ RSpec.configure do |config|
     Ductwork.app_executor = nil
     Ductwork.configuration = nil
     Ductwork.defined_pipelines = nil
+    Ductwork.hooks = nil
   end
 end
