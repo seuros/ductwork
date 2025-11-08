@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require "logger"
-require "active_support"
-require "active_support/core_ext/hash"
-require "active_support/core_ext/time"
 require "active_record"
-require "securerandom"
+require "active_support"
+require "logger"
 require "rails/engine"
+require "securerandom"
 require "zeitwerk"
+
 require "ductwork/engine"
 
 loader = Zeitwerk::Loader.for_gem
