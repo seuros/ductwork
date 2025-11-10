@@ -5,13 +5,13 @@ RSpec.describe Ductwork::Processes::PipelineAdvancer do
     subject(:advancer) { described_class.new(running_context, *klasses) }
 
     let(:running_context) { Ductwork::RunningContext.new }
-    let(:klasses) { %w[MyPipeline1] }
     let(:pipeline) { create(:pipeline, status: :in_progress, definition: definition) }
+    let(:klasses) { [pipeline.klass] }
     let(:definition) { {}.to_json }
 
     it "completes steps in 'advancing' status" do
-      advancing_step = create(:step, status: :advancing)
-      in_progress_step = create(:step, status: :in_progress)
+      advancing_step = create(:step, status: :advancing, pipeline: pipeline)
+      in_progress_step = create(:step, status: :in_progress, pipeline: pipeline)
 
       expect do
         advancer.call
@@ -30,7 +30,7 @@ RSpec.describe Ductwork::Processes::PipelineAdvancer do
     end
 
     it "no-ops if the running context is shutdown" do
-      step = create(:step, status: :advancing)
+      step = create(:step, status: :advancing, pipeline: pipeline)
       running_context.shutdown!
 
       expect do

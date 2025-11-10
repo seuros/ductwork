@@ -22,7 +22,7 @@ module Ductwork
             pipeline: pipeline
           )
           job = Ductwork.wrap_with_app_executor do
-            Job.claim_latest
+            Job.claim_latest(pipeline)
           end
 
           if job.present?

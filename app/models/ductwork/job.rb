@@ -11,11 +11,13 @@ module Ductwork
 
     FAILED_EXECUTION_TIMEOUT = 10.seconds
 
-    def self.claim_latest
+    def self.claim_latest(klass) # rubocop:todo Metrics/MethodLength
       process_id = ::Process.pid
       id = Ductwork::Availability
-           .where("started_at <= ?", Time.current)
+           .joins(execution: { job: { step: :pipeline } })
+           .where("ductwork_availabilities.started_at <= ?", Time.current)
            .where(completed_at: nil)
+           .where(ductwork_pipelines: { klass: })
            .order(:created_at)
            .limit(1)
            .pluck(:id)

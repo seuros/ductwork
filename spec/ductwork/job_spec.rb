@@ -37,27 +37,37 @@ RSpec.describe Ductwork::Job do
   describe ".claim_latest" do
     let(:availability) { create(:availability) }
     let(:execution) { availability.execution }
+    let(:klass) { execution.job.step.pipeline.klass }
 
     it "updates the the availability record" do
       be_almost_now = be_within(1.second).of(Time.current)
 
       expect do
-        described_class.claim_latest
+        described_class.claim_latest(klass)
       end.to change { availability.reload.completed_at }.from(nil).to(be_almost_now)
         .and change(availability, :process_id).from(nil).to(::Process.pid)
     end
 
     it "updates the execution record" do
       expect do
-        described_class.claim_latest
+        described_class.claim_latest(klass)
       end.to change { execution.reload.process_id }.from(nil).to(::Process.pid)
+    end
+
+    it "only claims jobs for the specified pipeline klass" do
+      other_availability = create(:availability)
+      pipeline = other_availability.execution.job.step.pipeline
+
+      expect do
+        described_class.claim_latest(pipeline.class.name)
+      end.not_to change { other_availability.reload.process_id }.from(nil)
     end
 
     it "does not claim job execution availabilities in the future" do
       future_availability = create(:availability, started_at: 5.seconds.from_now)
 
       expect do
-        described_class.claim_latest
+        described_class.claim_latest(klass)
       end.not_to change { future_availability.reload.completed_at }.from(nil)
     end
   end
