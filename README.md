@@ -12,12 +12,6 @@ Install the gem and add to the application's Gemfile by executing:
 bundle add ductwork
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install ductwork
-```
-
 Once installed, you can use the rails generator to create the binstub, config file with defaults, and migrations. Execute it with:
 
 ```bash
