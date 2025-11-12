@@ -81,7 +81,9 @@ module Ductwork
 
       def run_hooks_for(event)
         Ductwork.hooks[:advancer].fetch(event, []).each do |block|
-          block.call(self)
+          Ductwork.wrap_with_app_executor do
+            block.call(self)
+          end
         end
       end
 
