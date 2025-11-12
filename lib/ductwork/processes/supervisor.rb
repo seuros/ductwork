@@ -3,8 +3,6 @@
 module Ductwork
   module Processes
     class Supervisor
-      DEFAULT_TIMEOUT = 30 # seconds
-
       attr_reader :workers
 
       def initialize
