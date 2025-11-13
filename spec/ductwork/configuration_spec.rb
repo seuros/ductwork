@@ -290,6 +290,41 @@ RSpec.describe Ductwork::Configuration do
     end
   end
 
+  describe "#pipeline_shutdown_timeout" do
+    context "when the config file exists" do
+      let(:data) do
+        <<~DATA
+          default: &default
+            pipeline:
+              shutdown_timeout: 25
+
+          test:
+            <<: *default
+        DATA
+      end
+
+      before do
+        create_default_config_file
+      end
+
+      it "returns the timeout" do
+        config = described_class.new
+
+        expect(config.pipeline_shutdown_timeout).to eq(25)
+      end
+    end
+
+    context "when no config file exists" do
+      it "returns the default" do
+        config = described_class.new
+
+        expect(config.pipeline_shutdown_timeout).to eq(
+          described_class::DEFAULT_PIPELINE_SHUTDOWN_TIMEOUT
+        )
+      end
+    end
+  end
+
   describe "#supervisor_polling_timeout" do
     context "when the config file exists" do
       let(:data) do

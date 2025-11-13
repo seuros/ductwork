@@ -9,6 +9,7 @@ module Ductwork
     DEFAULT_JOB_WORKER_POLLING_TIMEOUT = 1 # second
     DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT = 20 # seconds
     DEFAULT_PIPELINE_POLLING_TIMEOUT = 1 # second
+    DEFAULT_PIPELINE_SHUTDOWN_TIMEOUT = 20 # seconds
     DEFAULT_SUPERVISOR_POLLING_TIMEOUT = 1 # second
     DEFAULT_SUPERVISOR_SHUTDOWN_TIMEOUT = 30 # seconds
     DEFAULT_LOGGER = ::Logger.new($stdout)
@@ -70,6 +71,10 @@ module Ductwork
       @pipeline_polling_timeout ||= fetch_pipeline_polling_timeout
     end
 
+    def pipeline_shutdown_timeout
+      @pipeline_shutdown_timeout ||= fetch_pipeline_shutdown_timeout
+    end
+
     def supervisor_polling_timeout
       @supervisor_polling_timeout ||= fetch_supervisor_polling_timeout
     end
@@ -100,6 +105,11 @@ module Ductwork
     def fetch_pipeline_polling_timeout
       config.dig(:pipeline, :polling_timeout) ||
         DEFAULT_PIPELINE_POLLING_TIMEOUT
+    end
+
+    def fetch_pipeline_shutdown_timeout
+      config.dig(:pipeline, :shutdown_timeout) ||
+        DEFAULT_PIPELINE_SHUTDOWN_TIMEOUT
     end
 
     def fetch_supervisor_polling_timeout
