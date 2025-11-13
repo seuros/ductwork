@@ -32,6 +32,7 @@ module Ductwork
         )
 
         while running?
+          # TODO: Increase of make configurable
           sleep(5)
           attempt_synchronize_threads
           report_heartbeat!
@@ -126,6 +127,8 @@ module Ductwork
           threads.each do |thread|
             break if Time.current < deadline
 
+            # TODO: Maybe make this configurable. If there's a ton of workers
+            # it may not even get to the "later" ones depending on the timeout
             thread.join(1)
           end
         end
