@@ -138,7 +138,11 @@ module Ductwork
         threads.each do |thread|
           if thread.alive?
             thread.kill
-            logger.debug(msg: "Killed thread", role: :job_worker_runner)
+            logger.debug(
+              msg: "Killed thread",
+              role: :job_worker_runner,
+              thread: thread.name
+            )
           end
         end
       end
