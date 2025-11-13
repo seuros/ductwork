@@ -9,6 +9,7 @@ module Ductwork
     validates :definition_sha1, presence: true
     validates :status, presence: true
     validates :triggered_at, presence: true
+    validates :last_advanced_at, presence: true
 
     enum :status,
          pending: "pending",
@@ -61,7 +62,8 @@ module Ductwork
             status: :in_progress,
             definition: definition,
             definition_sha1: Digest::SHA1.hexdigest(definition),
-            triggered_at: Time.current
+            triggered_at: Time.current,
+            last_advanced_at: Time.current
           )
           step = pipeline.steps.create!(
             klass: step_klass,

@@ -4,47 +4,98 @@ RSpec.describe Ductwork::Pipeline do
   describe "validations" do
     let(:klass) { "MyPipeline" }
     let(:triggered_at) { Time.current }
+    let(:last_advanced_at) { Time.current }
     let(:status) { "in_progress" }
     let(:definition) { JSON.dump({}) }
     let(:definition_sha1) { Digest::SHA1.hexdigest(definition) }
 
     it "is invalid if the `klass` is not present" do
-      pipeline = described_class.new(triggered_at:, status:, definition:, definition_sha1:)
+      pipeline = described_class.new(
+        triggered_at:,
+        last_advanced_at:,
+        status:,
+        definition:,
+        definition_sha1:
+      )
 
       expect(pipeline).not_to be_valid
       expect(pipeline.errors.full_messages).to eq(["Klass can't be blank"])
     end
 
     it "is invalid if `triggered_at` is not present" do
-      pipeline = described_class.new(klass:, status:, definition:, definition_sha1:)
+      pipeline = described_class.new(
+        klass:,
+        last_advanced_at:,
+        status:,
+        definition:,
+        definition_sha1:
+      )
 
       expect(pipeline).not_to be_valid
       expect(pipeline.errors.full_messages).to eq(["Triggered at can't be blank"])
     end
 
+    it "is invalid if `last_advanced_at` is not present" do
+      pipeline = described_class.new(
+        klass:,
+        triggered_at:,
+        status:,
+        definition:,
+        definition_sha1:
+      )
+
+      expect(pipeline).not_to be_valid
+      expect(pipeline.errors.full_messages).to eq(["Last advanced at can't be blank"])
+    end
+
     it "is invalid if `status` is not present" do
-      pipeline = described_class.new(klass:, triggered_at:, definition:, definition_sha1:)
+      pipeline = described_class.new(
+        klass:,
+        triggered_at:,
+        last_advanced_at:,
+        definition:,
+        definition_sha1:
+      )
 
       expect(pipeline).not_to be_valid
       expect(pipeline.errors.full_messages).to eq(["Status can't be blank"])
     end
 
     it "is invalid if `definition` is not present" do
-      pipeline = described_class.new(klass:, triggered_at:, status:, definition_sha1:)
+      pipeline = described_class.new(
+        klass:,
+        triggered_at:,
+        last_advanced_at:,
+        status:,
+        definition_sha1:
+      )
 
       expect(pipeline).not_to be_valid
       expect(pipeline.errors.full_messages).to eq(["Definition can't be blank"])
     end
 
     it "is invalid if `definition_sha1` is not present" do
-      pipeline = described_class.new(klass:, triggered_at:, status:, definition:)
+      pipeline = described_class.new(
+        klass:,
+        triggered_at:,
+        last_advanced_at:,
+        status:,
+        definition:
+      )
 
       expect(pipeline).not_to be_valid
       expect(pipeline.errors.full_messages).to eq(["Definition sha1 can't be blank"])
     end
 
     it "is valid otherwise" do
-      pipeline = described_class.new(klass:, triggered_at:, status:, definition:, definition_sha1:)
+      pipeline = described_class.new(
+        klass:,
+        triggered_at:,
+        last_advanced_at:,
+        status:,
+        definition:,
+        definition_sha1:
+      )
 
       expect(pipeline).to be_valid
     end
@@ -73,7 +124,8 @@ RSpec.describe Ductwork::Pipeline do
         status: :in_progress,
         definition: "{}",
         definition_sha1: Digest::SHA1.hexdigest("{}"),
-        triggered_at: Time.current
+        triggered_at: Time.current,
+        last_advanced_at: Time.current
       )
 
       expect(klass.all.count).to eq(1)
