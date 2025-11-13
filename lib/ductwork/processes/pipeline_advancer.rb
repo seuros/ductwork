@@ -3,9 +3,16 @@
 module Ductwork
   module Processes
     class PipelineAdvancer
-      def initialize(running_context, *klasses)
+      def initialize(running_context, klass)
         @running_context = running_context
-        @klasses = klasses
+        @klass = klass
+      end
+
+      def run
+        while running_context.running?
+          logger.debug("hi lolol")
+          sleep(2)
+        end
       end
 
       def call # rubocop:disable Metrics

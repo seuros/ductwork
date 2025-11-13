@@ -6,6 +6,7 @@ module Ductwork
       def initialize(*klasses)
         @klasses = klasses
         @running_context = Ductwork::RunningContext.new
+        @threads = create_threads
 
         Signal.trap(:INT) { running_context.shutdown! }
         Signal.trap(:TERM) { running_context.shutdown! }
@@ -23,14 +24,17 @@ module Ductwork
       end
 
       def run
-        run_hooks_for(:start)
         create_process!
-        logger.debug(msg: "Entering main work loop", role: :pipeline_advancer)
+        logger.debug(
+          msg: "Entering main work loop",
+          role: :pipeline_advancer_runner
+        )
 
         while running_context.running?
-          advance_all_pipelines
+          # TODO: Increase or make configurable
+          sleep(5)
+          attempt_synchronize_threads
           report_heartbeat!
-          sleep(Ductwork.configuration.pipeline_polling_timeout)
         end
 
         shutdown
@@ -38,7 +42,46 @@ module Ductwork
 
       private
 
-      attr_reader :klasses, :running_context
+      attr_reader :klasses, :running_context, :threads
+
+      def create_threads
+        klasses.map do |klass|
+          pipeline_advancer = Ductwork::Processes::PipelineAdvancer.new(
+            running_context,
+            klass
+          )
+
+          logger.debug(
+            msg: "Creating new thread",
+            role: :pipeline_advancer_runner,
+            pipeline: klass
+          )
+          thread = Thread.new do
+            pipeline_advancer.run
+          end
+          thread.name = "ductwork.pipeline_advancer.#{klass}"
+
+          logger.debug(
+            msg: "Created new thread",
+            role: :pipeline_advancer_runner,
+            pipeline: klass
+          )
+
+          thread
+        end
+      end
+
+      def attempt_synchronize_threads
+        logger.debug(
+          msg: "Attempting to synchronize threads",
+          role: :pipeline_advancer_runner
+        )
+        threads.each { |thread| thread.join(0.1) }
+        logger.debug(
+          msg: "Synchronizing threads timed out",
+          role: :pipeline_advancer_runner
+        )
+      end
 
       def create_process!
         Ductwork.wrap_with_app_executor do
@@ -50,40 +93,68 @@ module Ductwork
         end
       end
 
-      def advance_all_pipelines
-        Ductwork::Processes::PipelineAdvancer
-          .new(running_context, *klasses)
-          .call
-      end
-
       def report_heartbeat!
-        logger.debug(msg: "Reporting heartbeat", role: :pipeline_advancer)
+        logger.debug(msg: "Reporting heartbeat", role: :pipeline_advancer_runner)
         Ductwork.wrap_with_app_executor do
           Ductwork::Process.report_heartbeat!
         end
-        logger.debug(msg: "Reported heartbeat", role: :pipeline_advancer)
+        logger.debug(msg: "Reported heartbeat", role: :pipeline_advancer_runner)
       end
 
       def shutdown
-        logger.debug(msg: "Shutting down", role: :pipeline_advancer)
+        log_shutting_down
+        stop_running_context
+        await_threads_graceful_shutdown
+        kill_remaining_threads
+        delete_process!
+      end
 
+      def log_shutting_down
+        logger.debug(msg: "Shutting down", role: :pipeline_advancer_runner)
+      end
+
+      def stop_running_context
+        running_context.shutdown!
+      end
+
+      def await_threads_graceful_shutdown
+        timeout = Ductwork.configuration.pipeline_shutdown_timeout
+        deadline = Time.current + timeout
+
+        logger.debug(
+          msg: "Attempting graceful shutdown",
+          role: :pipeline_advancer_runner
+        )
+        while Time.current < deadline && threads.any?(&:alive?)
+          threads.each do |thread|
+            break if Time.current < deadline
+
+            # TODO: Maybe make this configurable. If there's a ton of workers
+            # it may not even get to the "later" ones depending on the timeout
+            thread.join(1)
+          end
+        end
+      end
+
+      def kill_remaining_threads
+        threads.each do |thread|
+          if thread.alive?
+            thread.kill
+            logger.debug(
+              msg: "Killed thread",
+              role: :pipeline_advancer_runner,
+              thread: thread.name
+            )
+          end
+        end
+      end
+
+      def delete_process!
         Ductwork.wrap_with_app_executor do
           Ductwork::Process.find_by!(
             pid: ::Process.pid,
             machine_identifier: Ductwork::MachineIdentifier.fetch
           ).delete
-        end
-
-        logger.debug(msg: "Process deleted", role: :pipeline_advancer)
-
-        run_hooks_for(:stop)
-      end
-
-      def run_hooks_for(event)
-        Ductwork.hooks[:advancer].fetch(event, []).each do |block|
-          Ductwork.wrap_with_app_executor do
-            block.call(self)
-          end
         end
       end
 
