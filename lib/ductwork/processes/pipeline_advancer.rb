@@ -14,7 +14,7 @@ module Ductwork
           id = Ductwork::Pipeline
                .in_progress
                .where(klass:)
-               .where.not(steps: Step.where.not(status: %w[advancing completed]))
+               .where.not(steps: Ductwork::Step.where.not(status: %w[advancing completed]))
                .order(:last_advanced_at)
                .limit(1)
                .pluck(:id)
