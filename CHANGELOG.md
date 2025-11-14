@@ -1,5 +1,5 @@
-## [Unreleased]
+# Ductwork Changelog
 
-## [0.1.0] - 2024-11-15
+## [0.1.0]
 
-- Initial release
+- Initial release - see [documentation](https://docs.getductwork.io/) for details
