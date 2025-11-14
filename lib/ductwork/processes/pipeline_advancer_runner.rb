@@ -57,7 +57,9 @@ module Ductwork
             pipeline: klass
           )
           thread = Thread.new do
-            pipeline_advancer.run
+            Ductwork.wrap_with_app_executor do
+              pipeline_advancer.run
+            end
           end
           thread.name = "ductwork.pipeline_advancer.#{klass}"
 

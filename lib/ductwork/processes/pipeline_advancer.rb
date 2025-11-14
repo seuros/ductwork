@@ -8,110 +8,64 @@ module Ductwork
         @klass = klass
       end
 
-      def run
+      def run # rubocop:todo Metrics/AbcSize, Metrics/MethodLength
+        run_hooks_for(:start)
         while running_context.running?
-          logger.debug("hi lolol")
-          sleep(2)
-        end
-      end
+          id = Ductwork::Pipeline
+               .in_progress
+               .where(klass:)
+               .where.not(steps: Step.where.not(status: %w[advancing completed]))
+               .order(:last_advanced_at)
+               .limit(1)
+               .pluck(:id)
+               .first
 
-      def call # rubocop:disable Metrics
-        logger.debug(msg: "Advancing pipelines", role: :pipeline_advancer)
+          if id.present?
+            rows_updated = Ductwork::Pipeline
+                           .where(id: id, claimed_for_advancing_at: nil)
+                           .update_all(claimed_for_advancing_at: Time.current)
 
-        Ductwork.wrap_with_app_executor do # rubocop:todo Metrics/BlockLength
-          steps_to_advance.find_each do |step| # rubocop:todo Metrics/BlockLength
-            break if !running_context.running?
+            if rows_updated == 1
+              logger.debug(
+                msg: "Pipeline claimed",
+                role: :pipeline_advancer
+              )
 
-            pipeline = step.pipeline
-            definition = JSON.parse(pipeline.definition).with_indifferent_access
-            edge = definition.dig(:edges, step.klass, 0)
+              pipeline = Ductwork::Pipeline.find(id)
+              pipeline.advance!
 
-            # NOTE: sigh, apologies to anyone reading this... there's a lot of
-            # conditional branching here that makes this a huge mess along
-            # with random argument deserialization/serialization. slowly
-            # cleaining this up
-            Ductwork::Record.transaction do # rubocop:disable Metrics/BlockLength
-              step.update!(status: :completed, completed_at: Time.current)
-
-              if edge.nil?
-                if !pipeline.steps.where.not(status: :completed).exists?
-                  pipeline.update!(status: :completed, completed_at: Time.current)
-                end
-              else
-                # NOTE: "chain" is used by ActiveRecord so we have to call
-                # this enum value "default" :sad:
-                step_type = edge[:type] == "chain" ? "default" : edge[:type]
-
-                if step_type.in?(%w[default divide])
-                  edge[:to].each do |klass|
-                    next_step = pipeline.steps.create!(
-                      klass: klass,
-                      status: :in_progress,
-                      step_type: step_type,
-                      started_at: Time.current
-                    )
-                    Ductwork::Job.enqueue(next_step, step.job.return_value)
-                  end
-                elsif step_type == "combine"
-                  previous_klasses = definition[:edges].select do |_, v|
-                    v.dig(0, :to, 0) == edge[:to].sole && v.dig(0, :type) == "combine"
-                  end.keys
-
-                  if pipeline.steps.not_completed.where(klass: previous_klasses).none?
-                    input_arg = Job.where(
-                      step: pipeline.steps.completed.where(klass: previous_klasses)
-                    ).map(&:return_value)
-                    create_step_and_enqueue_job(
-                      pipeline: pipeline,
-                      klass: edge[:to].sole,
-                      step_type: step_type,
-                      input_arg: input_arg
-                    )
-                  end
-                elsif step_type == "expand"
-                  step.job.return_value.each do |input_arg|
-                    create_step_and_enqueue_job(
-                      pipeline: pipeline,
-                      klass: edge[:to].sole,
-                      step_type: step_type,
-                      input_arg: input_arg
-                    )
-                  end
-                elsif step_type == "collapse"
-                  if pipeline.steps.not_completed.where(klass: step.klass).none?
-                    input_arg = Job.where(
-                      step: pipeline.steps.completed.where(klass: step.klass)
-                    ).map(&:return_value)
-                    create_step_and_enqueue_job(
-                      pipeline: pipeline,
-                      klass: edge[:to].sole,
-                      step_type: step_type,
-                      input_arg: input_arg
-                    )
-                  else
-                    logger.debug(msg: "Not all expanded steps have completed", role: :pipeline_advancer)
-                  end
-                else
-                  logger.error("Invalid step type? This is wrong lol", role: :pipeline_advancer)
-                end
-              end
+              logger.debug(
+                msg: "Pipeline advanced",
+                role: :pipeline_advancer
+              )
+            else
+              logger.debug(
+                msg: "Did not claim pipeline, avoided race condition",
+                role: :pipeline_advancer
+              )
             end
+
+            # release the pipeline and set last advanced at so it doesnt block.
+            # we're not using a queue so we have to use a db timestamp
+            Ductwork::Pipeline
+              .find(id)
+              .update!(claimed_for_advancing_at: nil, last_advanced_at: Time.current)
+          else
+            logger.debug(
+              msg: "No pipeline needs advancing",
+              role: :pipeline_advancer
+            )
           end
+
+          sleep(Ductwork.configuration.pipeline_polling_timeout)
         end
 
-        logger.debug(msg: "Advanced pipelines", role: :pipeline_advancer)
+        run_hooks_for(:stop)
       end
 
       private
 
-      attr_reader :running_context, :klasses
-
-      def steps_to_advance
-        Ductwork::Step
-          .advancing
-          .joins(:pipeline)
-          .where(ductwork_pipelines: { klass: klasses })
-      end
+      attr_reader :running_context, :klass
 
       # NOTE: this probably should be a method on a model(s) or something
       # because a job is always going to be enqueued when a new in-progress
@@ -121,6 +75,14 @@ module Ductwork
         started_at = Time.current
         next_step = pipeline.steps.create!(klass:, status:, step_type:, started_at:)
         Ductwork::Job.enqueue(next_step, input_arg)
+      end
+
+      def run_hooks_for(event)
+        Ductwork.hooks[:advancer].fetch(event, []).each do |block|
+          Ductwork.wrap_with_app_executor do
+            block.call(self)
+          end
+        end
       end
 
       def logger
