@@ -7,22 +7,25 @@ Gem::Specification.new do |spec|
   spec.version = Ductwork::VERSION
   spec.authors = ["Tyler Ewing"]
   spec.email = ["tewing10@gmail.com"]
-  spec.summary = "A pipeline framework"
-  spec.description = "A pipeline framework"
-  spec.homepage = "https://github.com/zoso10/ductwork"
-  spec.license = "LGPL-3.0"
+  spec.summary = "A Ruby pipeline framework"
+  spec.description = "Ductwork lets you build complex pipelines quickly and " \
+                     "easily using intuitive Ruby tooling and a natural DSL."
+  spec.homepage = "https://github.com/ductwork/ductwork"
+  spec.license = "LGPL-3.0-or-later"
   spec.required_ruby_version = ">= 3.1.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = spec.homepage
   spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/README.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   gemspec = File.basename(__FILE__)
+  excludes = %w[
+    bin/ log/ gemfiles/ spec/ .git .github .rspec .rubocop.yml .ruby-version
+    Gemfile Appraisals LICENSE.txt CODE_OF_CONDUCT.md config.ru
+  ]
   spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
     ls.readlines("\x0", chomp: true).reject do |f|
-      (f == gemspec) ||
-        f.start_with?(*%w[bin/ test/ spec/ features/ .git .github appveyor Gemfile])
+      (f == gemspec) || f.start_with?(*excludes)
     end
   end
   spec.bindir = "exe"
