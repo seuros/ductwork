@@ -17,8 +17,9 @@ module Ductwork
 
     attr_accessor :logger
     attr_writer :job_worker_polling_timeout, :job_worker_shutdown_timeout,
-                :pipeline_polling_timeout, :supervisor_polling_timeout,
-                :supervisor_shutdown_timeout, :job_worker_max_retry
+                :job_worker_max_retry,
+                :pipeline_polling_timeout, :pipeline_shutdown_timeout,
+                :supervisor_polling_timeout, :supervisor_shutdown_timeout
 
     def initialize(path: DEFAULT_FILE_PATH)
       full_path = Pathname.new(path)
