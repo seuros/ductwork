@@ -8,6 +8,8 @@ module Ductwork
     DEFAULT_JOB_WORKER_MAX_RETRY = 3 # attempts
     DEFAULT_JOB_WORKER_POLLING_TIMEOUT = 1 # second
     DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT = 20 # seconds
+    DEFAULT_LOGGER_LEVEL = ::Logger::INFO
+    DEFAULT_LOGGER_SOURCE = "default" # `Logger` instance writing to STDOUT
     DEFAULT_PIPELINE_POLLING_TIMEOUT = 1 # second
     DEFAULT_PIPELINE_SHUTDOWN_TIMEOUT = 20 # seconds
     DEFAULT_SUPERVISOR_POLLING_TIMEOUT = 1 # second
@@ -18,6 +20,7 @@ module Ductwork
     attr_accessor :logger
     attr_writer :job_worker_polling_timeout, :job_worker_shutdown_timeout,
                 :job_worker_max_retry,
+                :logger_level,
                 :pipeline_polling_timeout, :pipeline_shutdown_timeout,
                 :supervisor_polling_timeout, :supervisor_shutdown_timeout
 
@@ -68,6 +71,14 @@ module Ductwork
       @job_worker_shutdown_timeout ||= fetch_job_worker_shutdown_timeout
     end
 
+    def logger_level
+      @logger_level ||= fetch_logger_level
+    end
+
+    def logger_source
+      @logger_source ||= fetch_logger_source
+    end
+
     def pipeline_polling_timeout
       @pipeline_polling_timeout ||= fetch_pipeline_polling_timeout
     end
@@ -101,6 +112,14 @@ module Ductwork
     def fetch_job_worker_shutdown_timeout
       config.dig(:job_worker, :shutdown_timeout) ||
         DEFAULT_JOB_WORKER_SHUTDOWN_TIMEOUT
+    end
+
+    def fetch_logger_level
+      config.dig(:logger, :level) || DEFAULT_LOGGER_LEVEL
+    end
+
+    def fetch_logger_source
+      config.dig(:logger, :source) || DEFAULT_LOGGER_SOURCE
     end
 
     def fetch_pipeline_polling_timeout

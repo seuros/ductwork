@@ -1,5 +1,8 @@
 default: &default
   pipelines: "*"
+  logger:
+    level: 1
+    source: default
   job_worker:
     count: 5
     max_retry: 3
