@@ -243,6 +243,12 @@ RSpec.describe Ductwork::Job do
           end.to change { pipeline.reload.status }.to("halted")
         end
 
+        it "marks the step as failed" do
+          expect do
+            job.execute(pipeline)
+          end.to change { step.reload.status }.from("in_progress").to("failed")
+        end
+
         it "calls the on halt class if one is configured in the definition" do
           job.execute(pipeline)
 

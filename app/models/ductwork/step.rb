@@ -13,6 +13,7 @@ module Ductwork
          pending: "pending",
          in_progress: "in_progress",
          advancing: "advancing",
+         failed: "failed",
          completed: "completed"
 
     enum :step_type,

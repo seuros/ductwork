@@ -161,6 +161,8 @@ module Ductwork
           )
         elsif execution.retry_count >= Ductwork.configuration.job_worker_max_retry
           halted = true
+
+          step.update!(status: :failed)
           pipeline.halted!
         end
       end
