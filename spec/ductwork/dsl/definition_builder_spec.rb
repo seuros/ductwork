@@ -18,9 +18,40 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       expect(definition[:edges]["MyFirstStep"]).to eq([])
     end
 
+    it "raises if the argument is not a class" do
+      expect do
+        builder.start("MyFirstStep")
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder.start(Class.new)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder.start(klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
     it "raises if called more than once" do
       expect do
-        builder.start(spy).start(spy)
+        builder.start(MyFirstStep).start(MyFirstStep)
       end.to raise_error(
         described_class::StartError,
         "Can only start pipeline definition once"
@@ -48,9 +79,40 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       expect(definition[:edges]["MySecondStep"]).to eq([])
     end
 
+    it "raises if the argument is not a class" do
+      expect do
+        builder.start(MyFirstStep).chain("MySecondStep")
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder.start(MyFirstStep).chain(Class.new)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder.start(MyFirstStep).chain(klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
     it "raises if pipeline has not been started" do
       expect do
-        builder.chain(spy)
+        builder.chain(MyFirstStep)
       end.to raise_error(
         described_class::StartError,
         "Must start pipeline definition before chaining"
@@ -96,9 +158,40 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       end.to yield_control
     end
 
+    it "raises if the argument is not a class" do
+      expect do
+        builder.start(MyFirstStep).divide(to: [MySecondStep, "MyThirdStep"])
+      end.to raise_error(
+        ArgumentError,
+        "Arguments must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder.start(MyFirstStep).divide(to: [Class.new, MyThirdStep])
+      end.to raise_error(
+        ArgumentError,
+        "Arguments must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder.start(MyFirstStep).chain(klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
     it "raises if pipeline has not been started" do
       expect do
-        builder.divide(to: [spy, spy])
+        builder.divide(to: [MyFirstStep, MySecondStep])
       end.to raise_error(
         described_class::StartError,
         "Must start pipeline definition before dividing chain"
@@ -210,6 +303,46 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       expect(definition[:edges]["MyFifthStep"]).to eq([])
     end
 
+    it "raises if the argument is not a class" do
+      expect do
+        builder
+          .start(MyFirstStep)
+          .divide(to: [MySecondStep, MyThirdStep, MyFourthStep])
+          .combine(into: "MyFifthStep")
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder
+          .start(MyFirstStep)
+          .divide(to: [MySecondStep, MyThirdStep, MyFourthStep])
+          .combine(into: Class.new)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder
+          .start(MyFirstStep)
+          .divide(to: [MySecondStep, MyThirdStep, MyFourthStep])
+          .combine(into: klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
     it "raises if pipeline has not been started" do
       expect do
         builder.combine(into: MyFirstStep)
@@ -261,9 +394,40 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       expect(definition[:edges]["MySecondStep"]).to eq([])
     end
 
+    it "raises if the argument is not a class" do
+      expect do
+        builder.start(MyFirstStep).expand(to: "MySecondStep")
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder.start(MyFirstStep).expand(to: Class.new)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder.start(MyFirstStep).expand(to: klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
     it "raises if pipeline has not been started" do
       expect do
-        builder.expand(to: spy)
+        builder.expand(to: MyFirstStep)
       end.to raise_error(
         described_class::StartError,
         "Must start pipeline definition before expanding chain"
@@ -303,9 +467,49 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       expect(definition[:edges]["MyThirdStep"]).to eq([])
     end
 
+    it "raises if the argument is not a class" do
+      expect do
+        builder
+          .start(MyFirstStep)
+          .expand(to: MySecondStep)
+          .collapse(into: "MyThirdStep")
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder
+          .start(MyFirstStep)
+          .expand(to: MySecondStep)
+          .collapse(into: Class.new)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder
+          .start(MyFirstStep)
+          .expand(to: MySecondStep)
+          .collapse(into: klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
     it "raises if pipeline has not been started" do
       expect do
-        builder.collapse(into: spy)
+        builder.collapse(into: MyFirstStep)
       end.to raise_error(
         described_class::StartError,
         "Must start pipeline definition before collapsing steps"
@@ -314,7 +518,7 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
 
     it "raises if chain is not expanded" do
       expect do
-        builder.start(spy).collapse(into: spy)
+        builder.start(MyFirstStep).collapse(into: MyFirstStep)
       end.to raise_error(
         described_class::CollapseError,
         "Must expand pipeline definition before collapsing steps"
@@ -346,6 +550,37 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
 
       expect(definition[:nodes]).to eq(["MyFirstStep"])
       expect(definition[:metadata]).to eq(on_halt: { klass: "MyHaltStep" })
+    end
+
+    it "raises if the argument is not a class" do
+      expect do
+        builder.on_halt("MyFirstStep")
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have an 'execute' method" do
+      expect do
+        builder.on_halt(Class.new)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
+    end
+
+    it "raises if the argument does not have `execute` with arity zero" do
+      klass = Class.new do
+        def execute(_foobar); end
+      end
+
+      expect do
+        builder.on_halt(klass)
+      end.to raise_error(
+        ArgumentError,
+        "Argument must be a valid step class"
+      )
     end
   end
 

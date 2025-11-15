@@ -155,11 +155,11 @@ RSpec.describe Ductwork::Pipeline do
     it "raises if a pipeline has already been defined on the class" do
       expect do
         klass.define do |pipeline|
-          pipeline.start(spy)
+          pipeline.start(MyFirstStep)
         end
 
         klass.define do |pipeline|
-          pipeline.start(spy)
+          pipeline.start(MyFirstStep)
         end
       end.to raise_error(
         described_class::DefinitionError,
@@ -179,7 +179,7 @@ RSpec.describe Ductwork::Pipeline do
     it "sets the definition on the class" do
       expect do
         klass.define do |pipeline|
-          pipeline.start(spy)
+          pipeline.start(MyFirstStep)
         end
       end.to change(klass, :pipeline_definition).from(nil)
     end
@@ -187,7 +187,7 @@ RSpec.describe Ductwork::Pipeline do
     it "adds the pipeline to whole set of pipelines" do
       expect do
         klass.define do |pipeline|
-          pipeline.start(spy)
+          pipeline.start(MyFirstStep)
         end
       end.to change(Ductwork.defined_pipelines, :count).by(1)
       expect(Ductwork.defined_pipelines).to eq(["MyPipeline"])

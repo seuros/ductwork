@@ -17,6 +17,7 @@ module Ductwork
       end
 
       def start(klass)
+        validate_classes!(klass)
         validate_start_once!
         add_new_nodes(klass)
 
@@ -26,6 +27,7 @@ module Ductwork
       # NOTE: there is a bug here that does not allow the user to reuse step
       # classes in the same pipeline. i'll fix this later
       def chain(klass)
+        validate_classes!(klass)
         validate_definition_started!(action: "chaining")
         add_edge_to_last_node(klass, type: :chain)
         add_new_nodes(klass)
@@ -34,6 +36,7 @@ module Ductwork
       end
 
       def divide(to:)
+        validate_classes!(to)
         validate_definition_started!(action: "dividing chain")
         add_edge_to_last_node(*to, type: :divide)
         add_new_nodes(*to)
@@ -53,6 +56,7 @@ module Ductwork
       end
 
       def combine(into:)
+        validate_classes!(into)
         validate_definition_started!(action: "combining steps")
         validate_definition_divided!
 
@@ -73,6 +77,7 @@ module Ductwork
       end
 
       def expand(to:)
+        validate_classes!(to)
         validate_definition_started!(action: "expanding chain")
         add_edge_to_last_node(to, type: :expand)
         add_new_nodes(to)
@@ -83,6 +88,7 @@ module Ductwork
       end
 
       def collapse(into:)
+        validate_classes!(into)
         validate_definition_started!(action: "collapsing steps")
         validate_definition_expanded!
         add_edge_to_last_node(into, type: :collapse)
@@ -94,6 +100,8 @@ module Ductwork
       end
 
       def on_halt(klass)
+        validate_classes!(klass)
+
         definition[:metadata] ||= {}
         definition[:metadata][:on_halt] = {}
         definition[:metadata][:on_halt][:klass] = klass.name
@@ -110,6 +118,24 @@ module Ductwork
       private
 
       attr_reader :definition, :divisions, :expansions
+
+      def validate_classes!(klasses)
+        valid = Array(klasses).all? do |klass|
+          klass.is_a?(Class) &&
+            klass.method_defined?(:execute) &&
+            klass.instance_method(:execute).arity.zero?
+        end
+
+        if !valid
+          word = if Array(klasses).length > 1
+                   "Arguments"
+                 else
+                   "Argument"
+                 end
+
+          raise ArgumentError, "#{word} must be a valid step class"
+        end
+      end
 
       def validate_start_once!
         if definition[:nodes].any?
