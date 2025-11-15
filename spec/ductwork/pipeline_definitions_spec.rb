@@ -153,4 +153,30 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
       ]
     )
   end
+
+  it "correctly handles chaining while expanded before collapsing" do
+    definition = Class.new(Ductwork::Pipeline) do
+      define do |pipeline|
+        pipeline
+          .start(MyFirstStep)
+          .expand(to: MySecondStep)
+          .chain(MyThirdStep)
+          .chain(MyFourthStep)
+          .collapse(into: MyFifthStep)
+      end
+    end.pipeline_definition
+
+    expect(definition[:nodes]).to eq(
+      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep MyFifthStep]
+    )
+    expect(definition[:edges]["MySecondStep"]).to eq(
+      [{ to: ["MyThirdStep"], type: :chain }]
+    )
+    expect(definition[:edges]["MyThirdStep"]).to eq(
+      [{ to: ["MyFourthStep"], type: :chain }]
+    )
+    expect(definition[:edges]["MyFourthStep"]).to eq(
+      [{ to: ["MyFifthStep"], type: :collapse }]
+    )
+  end
 end

@@ -12,6 +12,8 @@ module Ductwork
           nodes: [],
           edges: {},
         }
+        @divisions = 0
+        @expansions = 0
       end
 
       def start(klass)
@@ -36,6 +38,8 @@ module Ductwork
         add_edge_to_last_node(*to, type: :divide)
         add_new_nodes(*to)
 
+        @divisions += 1
+
         if block_given?
           branches = to.map do |klass|
             Ductwork::DSL::BranchBuilder
@@ -51,6 +55,8 @@ module Ductwork
       def combine(into:)
         validate_definition_started!(action: "combining steps")
         validate_definition_divided!
+
+        @divisions -= 1
 
         last_nodes = definition[:nodes].reverse.select do |node|
           definition[:edges][node].empty?
@@ -71,6 +77,8 @@ module Ductwork
         add_edge_to_last_node(to, type: :expand)
         add_new_nodes(to)
 
+        @expansions += 1
+
         self
       end
 
@@ -79,6 +87,8 @@ module Ductwork
         validate_definition_expanded!
         add_edge_to_last_node(into, type: :collapse)
         add_new_nodes(into)
+
+        @expansions -= 1
 
         self
       end
@@ -99,7 +109,7 @@ module Ductwork
 
       private
 
-      attr_reader :definition
+      attr_reader :definition, :divisions, :expansions
 
       def validate_start_once!
         if definition[:nodes].any?
@@ -114,23 +124,15 @@ module Ductwork
       end
 
       def validate_definition_divided!
-        if last_edge.nil? || last_edge[:type] != :divide
+        if divisions.zero?
           raise CombineError, "Must divide pipeline definition before combining steps"
         end
       end
 
       def validate_definition_expanded!
-        if last_edge.nil? || last_edge[:type] != :expand
+        if expansions.zero?
           raise CollapseError, "Must expand pipeline definition before collapsing steps"
         end
-      end
-
-      def last_edge
-        last_edge_node = definition[:nodes].reverse.find do |node|
-          definition[:edges][node].any?
-        end
-
-        definition.dig(:edges, last_edge_node, -1)
       end
 
       def add_new_nodes(*klasses)
