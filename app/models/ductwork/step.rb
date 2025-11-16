@@ -3,7 +3,7 @@
 module Ductwork
   class Step < Ductwork::Record
     belongs_to :pipeline, class_name: "Ductwork::Pipeline"
-    has_one :job, class_name: "Ductwork::Job", foreign_key: "step_id"
+    has_one :job, class_name: "Ductwork::Job", foreign_key: "step_id", dependent: :destroy
 
     validates :klass, presence: true
     validates :status, presence: true
