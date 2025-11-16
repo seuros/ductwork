@@ -48,7 +48,7 @@ module Ductwork
         Ductwork.defined_pipelines << name.to_s
       end
 
-      def trigger(*args)
+      def trigger(args)
         if pipeline_definition.nil?
           raise DefinitionError, "Pipeline must be defined before triggering"
         end
