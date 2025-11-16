@@ -65,7 +65,7 @@ module Ductwork
             triggered_at: Time.current,
             last_advanced_at: Time.current
           )
-          step = pipeline.steps.create!(
+          step = p.steps.create!(
             klass: step_klass,
             status: :in_progress,
             step_type: :start,
@@ -78,7 +78,8 @@ module Ductwork
 
         Ductwork.configuration.logger.info(
           msg: "Pipeline triggered",
-          pipeline_id: pipeline.id
+          pipeline_id: pipeline.id,
+          role: :application
         )
 
         pipeline
@@ -121,7 +122,8 @@ module Ductwork
 
         Ductwork.configuration.logger.info(
           msg: "Pipeline completed",
-          pipeline_id: id
+          pipeline_id: id,
+          role: :pipeline_advancer
         )
       end
     end
@@ -148,9 +150,10 @@ module Ductwork
 
       Ductwork.configuration.logger.info(
         msg: "Pipeline advanced",
-        transition: edge[:type],
+        pipeline_id: id,
         step_id: step.id,
-        pipeline_id: id
+        transition: edge[:type],
+        role: :pipeline_advancer
       )
     end
 
