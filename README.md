@@ -75,7 +75,7 @@ class UsersRequiringEnrichment
 
   def execute
     ids = User.where("data_last_refreshed_at < ?", @days_outdated.days.ago).ids
-    Rails.logger.info("Enriching #{ids.length} users' data")
+    Ductwork.logger.info("Enriching #{ids.length} users' data")
 
     # Return value becomes input to the next step
     ids
