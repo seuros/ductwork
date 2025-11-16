@@ -10,5 +10,15 @@ module Ductwork
       Ductwork.configuration ||= Ductwork::Configuration.new
       Ductwork.configuration.logger ||= Rails.logger
     end
+
+    initializer "ductwork.validate_definitions", after: :load_config_initializers do
+      ActiveSupport.on_load(:active_record) do
+        # Load steps and pipelines so definition validation runs and bugs
+        # can be caught simply by booting the app or running tests
+        loader = Rails.autoloaders.main
+        loader.eager_load_dir(Rails.root.join("app/steps"))
+        loader.eager_load_dir(Rails.root.join("app/pipelines"))
+      end
+    end
   end
 end
