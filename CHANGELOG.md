@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.2.1] Unreleased
+## [0.2.1]
 
 - fix: do not splat arguments when executing a job nor triggering a pipeline
 - fix: do not splat arguments when enqueuing a job and fix related spec
