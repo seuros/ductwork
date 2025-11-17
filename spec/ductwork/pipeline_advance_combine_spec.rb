@@ -28,7 +28,7 @@ RSpec.describe Ductwork::Pipeline do
         # other step from the other branch of the `divide` action
         other_step = create(
           :step,
-          status: :completed,
+          status: :advancing,
           klass: "MyStepB",
           pipeline: pipeline
         )
@@ -55,6 +55,67 @@ RSpec.describe Ductwork::Pipeline do
         expect(Ductwork::Job).to have_received(:enqueue).with(
           anything, [payload, payload]
         )
+      end
+
+      context "when the pipeline has been expanded then divided" do
+        let(:advancing_steps) do
+          [
+            *create_list(
+              :step,
+              3,
+              status: :advancing,
+              step_type: :combine,
+              klass: "MyStepC",
+              pipeline: pipeline
+            ),
+            *create_list(
+              :step,
+              3,
+              status: :advancing,
+              step_type: :combine,
+              klass: "MyStepD",
+              pipeline: pipeline
+            ),
+            *create_list(
+              :step,
+              3,
+              status: :advancing,
+              step_type: :combine,
+              klass: "MyStepE",
+              pipeline: pipeline
+            ),
+          ]
+        end
+        let(:definition) do
+          {
+            nodes: %w[MyStepA MyStepB MyStepC MyStepD MyStepE MyStepF],
+            edges: {
+              "MyStepA" => [{ to: %w[MyStepB], type: "expand" }],
+              "MyStepB" => [{ to: %w[MyStepC MyStepD MyStepE], type: "divide" }],
+              "MyStepC" => [{ to: %w[MyStepF], type: "combine" }],
+              "MyStepD" => [{ to: %w[MyStepF], type: "combine" }],
+              "MyStepE" => [{ to: %w[MyStepF], type: "combine" }],
+              "MyStepF" => [],
+            },
+          }.to_json
+        end
+
+        before do
+          # assume all previous steps have completed successfully
+          Ductwork::Step.update!(status: "completed")
+          advancing_steps.each do |s|
+            create(:job, output_payload: output_payload, step: s)
+          end
+        end
+
+        it "collapses each active branch" do
+          expect do
+            pipeline.advance!
+          end.to change(Ductwork::Step, :count).by(3)
+            .and change(Ductwork::Job, :count).by(3)
+          klasses = Ductwork::Step.pluck(:klass).last(3)
+          expect(klasses).to eq(%w[MyStepF MyStepF MyStepF])
+        end
       end
     end
   end

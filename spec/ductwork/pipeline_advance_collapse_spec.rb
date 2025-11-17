@@ -28,7 +28,7 @@ RSpec.describe Ductwork::Pipeline do
         other_steps = create_list(
           :step,
           2,
-          status: :completed,
+          status: :advancing,
           klass: "MyStepB",
           pipeline: pipeline
         )
@@ -54,6 +54,60 @@ RSpec.describe Ductwork::Pipeline do
         pipeline.advance!
 
         expect(Ductwork::Job).to have_received(:enqueue).with(anything, [1, 1, 1])
+      end
+
+      context "when the pipeline has been divided then expanded" do
+        let(:advancing_steps) do
+          [
+            *create_list(
+              :step,
+              3,
+              status: :advancing,
+              step_type: :collapse,
+              klass: "MyStepD",
+              pipeline: pipeline
+            ),
+            *create_list(
+              :step,
+              3,
+              status: :advancing,
+              step_type: :collapse,
+              klass: "MyStepE",
+              pipeline: pipeline
+            ),
+          ]
+        end
+        let(:definition) do
+          {
+            nodes: %w[MyStepA MyStepB MyStepC MyStepD MyStepE MyStepF MyStepG],
+            edges: {
+              "MyStepA" => [{ to: %w[MyStepB MyStepC], type: "divide" }],
+              "MyStepB" => [{ to: %w[MyStepD], type: "expand" }],
+              "MyStepC" => [{ to: %w[MyStepE], type: "expand" }],
+              "MyStepD" => [{ to: %w[MyStepF], type: "collapse" }],
+              "MyStepE" => [{ to: %w[MyStepG], type: "collapse" }],
+              "MyStepF" => [],
+              "MyStepG" => [],
+            },
+          }.to_json
+        end
+
+        before do
+          # assume all previous steps have completed successfully
+          Ductwork::Step.update!(status: "completed")
+          advancing_steps.each do |s|
+            create(:job, output_payload: output_payload, step: s)
+          end
+        end
+
+        it "collapses each active branch" do
+          expect do
+            pipeline.advance!
+          end.to change(Ductwork::Step, :count).by(2)
+            .and change(Ductwork::Job, :count).by(2)
+          klasses = Ductwork::Step.pluck(:klass).last(2)
+          expect(klasses).to eq(%w[MyStepF MyStepG])
+        end
       end
     end
   end
