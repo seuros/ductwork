@@ -277,4 +277,13 @@ RSpec.describe Ductwork::Pipeline do
       )
     end
   end
+
+  describe "#parsed_definition" do
+    it "returns a JSON parsed indifferent hash" do
+      pipeline = described_class.new(definition: JSON.dump({ foo: "bar" }))
+
+      expect(pipeline.parsed_definition[:foo]).to eq("bar")
+      expect(pipeline.parsed_definition["foo"]).to eq("bar")
+    end
+  end
 end

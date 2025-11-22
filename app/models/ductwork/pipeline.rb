@@ -107,6 +107,10 @@ module Ductwork
       end
     end
 
+    def parsed_definition
+      @parsed_definition ||= JSON.parse(definition).with_indifferent_access
+    end
+
     private
 
     def create_step_and_enqueue_job(klass:, step_type:, input_arg:)
@@ -114,10 +118,6 @@ module Ductwork
       started_at = Time.current
       next_step = steps.create!(klass:, status:, step_type:, started_at:)
       Ductwork::Job.enqueue(next_step, input_arg)
-    end
-
-    def parsed_definition
-      @parsed_definition ||= JSON.parse(definition).with_indifferent_access
     end
 
     def conditionally_complete_pipeline(advancing)

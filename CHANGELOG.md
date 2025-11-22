@@ -3,6 +3,7 @@
 ## [0.3.1] (Unreleased)
 
 - fix: raise when trying to collapse a most recently divided pipeline and vice versa
+- chore: promote `Ductwork::Pipeline#parsed_definition` to a public method
 
 ## [0.3.0]
 
