@@ -26,6 +26,7 @@ module Ductwork
     end
 
     class DefinitionError < StandardError; end
+    class StepDepthError < StandardError; end
 
     class << self
       attr_reader :pipeline_definition
@@ -219,9 +220,17 @@ module Ductwork
     end
 
     def expand_to_next_steps(step_type, advancing, edge)
-      Array(advancing.take.job.return_value).each do |input_arg|
+      next_klass = edge[:to].sole
+      return_value = advancing.take.job.return_value
+      max_depth = Ductwork.configuration.steps_max_depth(pipeline: klass, step: next_klass)
+
+      if max_depth != -1 && return_value.count > max_depth
+        raise StepDepthError, "Exceeded maximum step depth of #{max_depth}"
+      end
+
+      Array(return_value).each do |input_arg|
         create_step_and_enqueue_job(
-          klass: edge[:to].sole,
+          klass: next_klass,
           step_type: step_type,
           input_arg: input_arg
         )

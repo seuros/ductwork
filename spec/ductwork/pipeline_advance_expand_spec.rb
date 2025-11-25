@@ -53,6 +53,14 @@ RSpec.describe Ductwork::Pipeline do
         expect(Ductwork::Job).to have_received(:enqueue).with(anything, "c")
       end
 
+      it "raises if the return value is larger than the max depth config" do
+        allow(Ductwork.configuration).to receive(:steps_max_depth).and_return(2)
+
+        expect do
+          pipeline.advance!
+        end.to raise_error(described_class::StepDepthError)
+      end
+
       context "when the pipeline has been divided" do
         let(:definition) do
           {

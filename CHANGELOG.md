@@ -2,6 +2,7 @@
 
 ## [0.4.0] (Unreleased)
 
+- feat: raise `Ductwork::Pipeline::StepDepthError` error if return payload count exceeds the configuration
 - feat: add `pipeline_advancer.steps.max_depth` configuration
 
 ## [0.3.1]
