@@ -12,6 +12,7 @@ module Ductwork
     DEFAULT_LOGGER_SOURCE = "default" # `Logger` instance writing to STDOUT
     DEFAULT_PIPELINE_POLLING_TIMEOUT = 1 # second
     DEFAULT_PIPELINE_SHUTDOWN_TIMEOUT = 20 # seconds
+    DEFAULT_STEPS_MAX_DEPTH = -1 # unlimited count
     DEFAULT_SUPERVISOR_POLLING_TIMEOUT = 1 # second
     DEFAULT_SUPERVISOR_SHUTDOWN_TIMEOUT = 30 # seconds
     DEFAULT_LOGGER = ::Logger.new($stdout)
@@ -84,6 +85,26 @@ module Ductwork
 
     def pipeline_shutdown_timeout
       @pipeline_shutdown_timeout ||= fetch_pipeline_shutdown_timeout
+    end
+
+    def steps_max_depth(pipeline: nil, step: nil) # rubocop:disable Metrics
+      pipeline ||= :default
+      step ||= :default
+      base_config = config.dig(:pipeline_advancer, :steps, :max_depth)
+
+      if base_config.is_a?(Hash) && base_config[pipeline.to_sym].is_a?(Hash)
+        pipeline_config = config.dig(:pipeline_advancer, :steps, :max_depth, pipeline.to_sym)
+
+        pipeline_config[step.to_sym] ||
+          pipeline_config[:default] ||
+          DEFAULT_STEPS_MAX_DEPTH
+      elsif base_config.is_a?(Hash)
+        base_config[pipeline.to_sym] ||
+          base_config[:default] ||
+          DEFAULT_STEPS_MAX_DEPTH
+      else
+        base_config || DEFAULT_STEPS_MAX_DEPTH
+      end
     end
 
     def supervisor_polling_timeout

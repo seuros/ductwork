@@ -49,7 +49,7 @@ RSpec/MultipleMemoizedHelpers:
   Max: 10
 
 RSpec/NestedGroups:
-  Max: 4
+  Max: 5
 
 RSpec/SpecFilePathFormat:
   Exclude:

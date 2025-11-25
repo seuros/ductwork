@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.4.0] (Unreleased)
+
+- feat: add `pipeline_advancer.steps.max_depth` configuration
+
 ## [0.3.1]
 
 - chore: bump dependencies and update necessary files
