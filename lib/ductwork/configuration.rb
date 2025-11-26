@@ -107,7 +107,7 @@ module Ductwork
     end
 
     def pipeline_polling_timeout(pipeline = nil)
-      pipeline ||= nil
+      pipeline ||= :default
       default = DEFAULT_PIPELINE_POLLING_TIMEOUT
       base_config = config.dig(:pipeline_advancer, :polling_timeout)
 
