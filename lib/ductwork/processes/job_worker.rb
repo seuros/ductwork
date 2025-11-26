@@ -35,7 +35,7 @@ module Ductwork
               role: :job_worker,
               pipeline: pipeline
             )
-            sleep(Ductwork.configuration.job_worker_polling_timeout)
+            sleep(polling_timeout)
           end
         end
 
@@ -61,6 +61,10 @@ module Ductwork
             block.call(self)
           end
         end
+      end
+
+      def polling_timeout
+        Ductwork.configuration.job_worker_polling_timeout(pipeline)
       end
     end
   end
