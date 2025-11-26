@@ -136,5 +136,30 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
         expect(klasses).to eq(%w[MyStepD MyStepE MyStepD MyStepE])
       end
     end
+
+    context "when next step cardinality is too large" do
+      let(:definition) do
+        {
+          nodes: %w[MyStepA MyStepB],
+          edges: {
+            "MyStepA" => [{ to: %w[MyStepB MyStepB MyStepB], type: "divide" }],
+            "MyStepB" => [],
+          },
+        }.to_json
+      end
+
+      before do
+        create(:step, status: :advancing, klass: "MyStepA", pipeline: pipeline)
+      end
+
+      it "halts the pipeline" do
+        Ductwork.configuration.steps_max_depth = 2
+
+        expect do
+          pipeline.advance!
+        end.not_to change(Ductwork::Step, :count)
+        expect(pipeline.reload).to be_halted
+      end
+    end
   end
 end

@@ -52,12 +52,13 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
       expect(Ductwork::Job).to have_received(:enqueue).with(anything, "c")
     end
 
-    it "raises if the return value is larger than the max depth config" do
+    it "halts the pipeline if next step cardinality is too large" do
       Ductwork.configuration.steps_max_depth = 2
 
       expect do
         pipeline.advance!
-      end.to raise_error(described_class::StepDepthError)
+      end.not_to change(Ductwork::Step, :count)
+      expect(pipeline.reload).to be_halted
     end
 
     context "when the pipeline has been divided" do

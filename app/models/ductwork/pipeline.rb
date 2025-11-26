@@ -26,7 +26,6 @@ module Ductwork
     end
 
     class DefinitionError < StandardError; end
-    class StepDepthError < StandardError; end
 
     class << self
       attr_reader :pipeline_definition
@@ -179,14 +178,26 @@ module Ductwork
     end
 
     def advance_to_next_steps(step_type, advancing, edge)
-      edge[:to].each do |to_klass|
-        next_step = steps.create!(
-          klass: to_klass,
-          status: :in_progress,
-          step_type: step_type,
-          started_at: Time.current
-        )
-        Ductwork::Job.enqueue(next_step, advancing.take.job.return_value)
+      too_many = edge[:to].tally.any? do |to_klass, count|
+        depth = Ductwork
+                .configuration
+                .steps_max_depth(pipeline: klass, step: to_klass)
+
+        depth != -1 && count > depth
+      end
+
+      if too_many
+        halted!
+      else
+        edge[:to].each do |to_klass|
+          next_step = steps.create!(
+            klass: to_klass,
+            status: :in_progress,
+            step_type: step_type,
+            started_at: Time.current
+          )
+          Ductwork::Job.enqueue(next_step, advancing.take.job.return_value)
+        end
       end
     end
 
@@ -225,15 +236,15 @@ module Ductwork
       max_depth = Ductwork.configuration.steps_max_depth(pipeline: klass, step: next_klass)
 
       if max_depth != -1 && return_value.count > max_depth
-        raise StepDepthError, "Exceeded maximum step depth of #{max_depth}"
-      end
-
-      Array(return_value).each do |input_arg|
-        create_step_and_enqueue_job(
-          klass: next_klass,
-          step_type: step_type,
-          input_arg: input_arg
-        )
+        halted!
+      else
+        Array(return_value).each do |input_arg|
+          create_step_and_enqueue_job(
+            klass: next_klass,
+            step_type: step_type,
+            input_arg: input_arg
+          )
+        end
       end
     end
 
