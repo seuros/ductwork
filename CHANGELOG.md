@@ -2,6 +2,7 @@
 
 ## [0.4.0] (Unreleased)
 
+- chore: move configuration specs under their own directory
 - feat: halt pipeline instead of erroring if max step depth is exceeded
 - chore: move specs under directory
 - feat: allow setting `pipeline_advancer.steps_max_depth` configuration manually
