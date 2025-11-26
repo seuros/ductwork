@@ -142,7 +142,7 @@ module Ductwork
       end
     end
 
-    def execution_failed!(execution, run, error) # rubocop:disable Metrics/AbcSize
+    def execution_failed!(execution, run, error) # rubocop:todo Metrics
       halted = false
       pipeline = step.pipeline
       max_retry = Ductwork
