@@ -2,6 +2,7 @@
 
 ## [0.4.0] (Unreleased)
 
+- chore: change job worker thread name format
 - feat: add and respect pipeline-level `pipeline_advancer.polling_timeout` configuration in pipeline advancer
 - feat: respect `job_worker.polling_timeout` configuration in job runner
 - feat: add pipeline-level `job_worker.polling_timeout` configuration

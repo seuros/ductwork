@@ -63,7 +63,7 @@ module Ductwork
           thread = Thread.new do
             job_worker.run
           end
-          thread.name = "ductwork.job_worker_#{i}"
+          thread.name = "ductwork.job_worker.#{i}"
 
           Ductwork.logger.debug(
             msg: "Created new thread",
