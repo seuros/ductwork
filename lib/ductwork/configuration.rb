@@ -18,8 +18,8 @@ module Ductwork
     DEFAULT_LOGGER = ::Logger.new($stdout)
     PIPELINES_WILDCARD = "*"
 
-    attr_writer :job_worker_polling_timeout, :job_worker_shutdown_timeout,
-                :job_worker_max_retry,
+    attr_writer :job_worker_count, :job_worker_polling_timeout,
+                :job_worker_shutdown_timeout, :job_worker_max_retry,
                 :logger_level,
                 :pipeline_polling_timeout, :pipeline_shutdown_timeout,
                 :steps_max_depth,
@@ -51,6 +51,8 @@ module Ductwork
     end
 
     def job_worker_count(pipeline)
+      return @job_worker_count if instance_variable_defined?(:@job_worker_count)
+
       raw_count = config.dig(:job_worker, :count) || DEFAULT_JOB_WORKER_COUNT
 
       if raw_count.is_a?(Hash)
