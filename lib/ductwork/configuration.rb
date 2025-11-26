@@ -106,8 +106,18 @@ module Ductwork
       @logger_source ||= fetch_logger_source
     end
 
-    def pipeline_polling_timeout
-      @pipeline_polling_timeout ||= fetch_pipeline_polling_timeout
+    def pipeline_polling_timeout(pipeline = nil)
+      pipeline ||= nil
+      default = DEFAULT_PIPELINE_POLLING_TIMEOUT
+      base_config = config.dig(:pipeline_advancer, :polling_timeout)
+
+      if instance_variable_defined?(:@pipeline_polling_timeout)
+        @pipeline_polling_timeout
+      elsif base_config.is_a?(Hash)
+        base_config[pipeline.to_sym] || base_config[:default] || default
+      else
+        base_config || default
+      end
     end
 
     def pipeline_shutdown_timeout
@@ -159,11 +169,6 @@ module Ductwork
 
     def fetch_logger_source
       config.dig(:logger, :source) || DEFAULT_LOGGER_SOURCE
-    end
-
-    def fetch_pipeline_polling_timeout
-      config.dig(:pipeline_advancer, :polling_timeout) ||
-        DEFAULT_PIPELINE_POLLING_TIMEOUT
     end
 
     def fetch_pipeline_shutdown_timeout

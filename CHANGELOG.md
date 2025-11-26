@@ -2,6 +2,7 @@
 
 ## [0.4.0] (Unreleased)
 
+- feat: add and respect pipeline-level `pipeline_advancer.polling_timeout` configuration in pipeline advancer
 - feat: respect `job_worker.polling_timeout` configuration in job runner
 - feat: add pipeline-level `job_worker.polling_timeout` configuration
 - feat: check pipeline and step-level max retry configurations when retrying a job

@@ -65,7 +65,7 @@ module Ductwork
             )
           end
 
-          sleep(Ductwork.configuration.pipeline_polling_timeout)
+          sleep(polling_timeout)
         end
 
         run_hooks_for(:stop)
@@ -81,6 +81,10 @@ module Ductwork
             block.call(self)
           end
         end
+      end
+
+      def polling_timeout
+        Ductwork.configuration.pipeline_polling_timeout(klass)
       end
     end
   end
