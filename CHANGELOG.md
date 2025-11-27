@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.4.0] (Unreleased)
+## [0.4.0]
 
 - chore: change job worker thread name format
 - feat: add and respect pipeline-level `pipeline_advancer.polling_timeout` configuration in pipeline advancer
