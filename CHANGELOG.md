@@ -2,6 +2,7 @@
 
 ## [0.5.0] (Unreleased)
 
+- chore: add pipeline ID to misc log lines
 - feat: add missing composite indexes on `ductwork_steps` table
 
 ## [0.4.0]

@@ -30,6 +30,7 @@ module Ductwork
             if rows_updated == 1
               Ductwork.logger.debug(
                 msg: "Pipeline claimed",
+                pipeline_id: id,
                 pipeline: klass,
                 role: :pipeline_advancer
               )
@@ -39,12 +40,14 @@ module Ductwork
 
               Ductwork.logger.debug(
                 msg: "Pipeline advanced",
+                pipeline_id: id,
                 pipeline: klass,
                 role: :pipeline_advancer
               )
             else
               Ductwork.logger.debug(
                 msg: "Did not claim pipeline, avoided race condition",
+                pipeline_id: id,
                 pipeline: klass,
                 role: :pipeline_advancer
               )
@@ -60,7 +63,6 @@ module Ductwork
             Ductwork.logger.debug(
               msg: "No pipeline needs advancing",
               pipeline: klass,
-              id: id,
               role: :pipeline_advancer
             )
           end
