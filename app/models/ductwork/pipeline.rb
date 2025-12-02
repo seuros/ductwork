@@ -8,6 +8,7 @@ module Ductwork
     validates :definition, presence: true
     validates :definition_sha1, presence: true
     validates :status, presence: true
+    validates :started_at, presence: true
     validates :triggered_at, presence: true
     validates :last_advanced_at, presence: true
 
@@ -64,6 +65,7 @@ module Ductwork
             definition: definition,
             definition_sha1: Digest::SHA1.hexdigest(definition),
             triggered_at: Time.current,
+            started_at: Time.current,
             last_advanced_at: Time.current
           )
           step = p.steps.create!(

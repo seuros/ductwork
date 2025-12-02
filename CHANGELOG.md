@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.6.0] (Unreleased)
+
+- feat: add `started_at` column to `ductwork_pipelines` table - for now, this will only be used in Pro features.
+
 ## [0.5.0]
 
 - core: add "waiting" status to `Step` model

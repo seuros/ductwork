@@ -4,6 +4,7 @@ RSpec.describe Ductwork::Pipeline do
   describe "validations" do
     let(:klass) { "MyPipeline" }
     let(:triggered_at) { Time.current }
+    let(:started_at) { 10.minutes.from_now }
     let(:last_advanced_at) { Time.current }
     let(:status) { "in_progress" }
     let(:definition) { JSON.dump({}) }
@@ -12,6 +13,7 @@ RSpec.describe Ductwork::Pipeline do
     it "is invalid if the `klass` is not present" do
       pipeline = described_class.new(
         triggered_at:,
+        started_at:,
         last_advanced_at:,
         status:,
         definition:,
@@ -25,6 +27,7 @@ RSpec.describe Ductwork::Pipeline do
     it "is invalid if `triggered_at` is not present" do
       pipeline = described_class.new(
         klass:,
+        started_at:,
         last_advanced_at:,
         status:,
         definition:,
@@ -35,10 +38,25 @@ RSpec.describe Ductwork::Pipeline do
       expect(pipeline.errors.full_messages).to eq(["Triggered at can't be blank"])
     end
 
+    it "is invalid if `started_at` is not present" do
+      pipeline = described_class.new(
+        klass:,
+        triggered_at:,
+        last_advanced_at:,
+        status:,
+        definition:,
+        definition_sha1:
+      )
+
+      expect(pipeline).not_to be_valid
+      expect(pipeline.errors.full_messages).to eq(["Started at can't be blank"])
+    end
+
     it "is invalid if `last_advanced_at` is not present" do
       pipeline = described_class.new(
         klass:,
         triggered_at:,
+        started_at:,
         status:,
         definition:,
         definition_sha1:
@@ -52,6 +70,7 @@ RSpec.describe Ductwork::Pipeline do
       pipeline = described_class.new(
         klass:,
         triggered_at:,
+        started_at:,
         last_advanced_at:,
         definition:,
         definition_sha1:
@@ -65,6 +84,7 @@ RSpec.describe Ductwork::Pipeline do
       pipeline = described_class.new(
         klass:,
         triggered_at:,
+        started_at:,
         last_advanced_at:,
         status:,
         definition_sha1:
@@ -78,6 +98,7 @@ RSpec.describe Ductwork::Pipeline do
       pipeline = described_class.new(
         klass:,
         triggered_at:,
+        started_at:,
         last_advanced_at:,
         status:,
         definition:
@@ -91,6 +112,7 @@ RSpec.describe Ductwork::Pipeline do
       pipeline = described_class.new(
         klass:,
         triggered_at:,
+        started_at:,
         last_advanced_at:,
         status:,
         definition:,
@@ -125,6 +147,7 @@ RSpec.describe Ductwork::Pipeline do
         definition: "{}",
         definition_sha1: Digest::SHA1.hexdigest("{}"),
         triggered_at: Time.current,
+        started_at: Time.current,
         last_advanced_at: Time.current
       )
 
