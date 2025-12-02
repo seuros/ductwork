@@ -14,6 +14,7 @@ module Ductwork
     enum :status,
          pending: "pending",
          in_progress: "in_progress",
+         waiting: "waiting",
          halted: "halted",
          completed: "completed"
 
