@@ -2,6 +2,7 @@
 
 ## [0.6.0] (Unreleased)
 
+- chore: let `zeitwerk` autoload models from `lib/models` directory instead of letting rails autoload them from the `app/models` directory via the rails engine
 - feat: add `started_at` column to `ductwork_pipelines` table - for now, this will only be used in Pro features.
 
 ## [0.5.0]
