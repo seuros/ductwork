@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.6.0] (Unreleased)
+## [0.6.0]
 
 - feat: expose `Ductwork.eager_load` method for eager loading code via `zeitwerk`
 - chore: let `zeitwerk` autoload models from `lib/models` directory instead of letting rails autoload them from the `app/models` directory via the rails engine
