@@ -12,7 +12,7 @@ module Ductwork
     end
 
     initializer "ductwork.validate_definitions", after: :load_config_initializers do
-      ActiveSupport.on_load(:active_record) do
+      config.after_initialize do
         # Load steps and pipelines so definition validation runs and bugs
         # can be caught simply by booting the app or running tests
         loader = Rails.autoloaders.main

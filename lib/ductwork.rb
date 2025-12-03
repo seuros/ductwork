@@ -7,8 +7,6 @@ require "rails/engine"
 require "securerandom"
 require "zeitwerk"
 
-require "ductwork/engine"
-
 module Ductwork
   class << self
     attr_accessor :app_executor, :configuration, :loader, :logger
@@ -82,3 +80,5 @@ loader.ignore("#{__dir__}/ductwork/testing.rb")
 loader.setup
 
 Ductwork.loader = loader
+
+require "ductwork/engine"
