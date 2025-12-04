@@ -58,5 +58,16 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
         "Must start pipeline definition before completing"
       )
     end
+
+    it "returns the definition" do
+      builder.start(MyFirstStep)
+
+      definition = builder.complete
+
+      expect(definition).to eq(
+        nodes: %w[MyFirstStep],
+        edges: { "MyFirstStep" => [] }
+      )
+    end
   end
 end
