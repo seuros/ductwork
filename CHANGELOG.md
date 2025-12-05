@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.7.1] (Unreleased)
+
+- chore: add pipeline definition metadata to `DefinitionBuilder` initializer
+
 ## [0.7.0]
 
 - feat: set `Pipeline` and `Step` models status to "in-progress" when claiming latest job

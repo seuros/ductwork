@@ -65,6 +65,7 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
       definition = builder.complete
 
       expect(definition).to eq(
+        metadata: {},
         nodes: %w[MyFirstStep],
         edges: { "MyFirstStep" => [] }
       )

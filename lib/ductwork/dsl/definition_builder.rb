@@ -9,6 +9,7 @@ module Ductwork
 
       def initialize
         @definition = {
+          metadata: {},
           nodes: [],
           edges: {},
         }
@@ -102,9 +103,7 @@ module Ductwork
       def on_halt(klass)
         validate_classes!(klass)
 
-        definition[:metadata] ||= {}
-        definition[:metadata][:on_halt] = {}
-        definition[:metadata][:on_halt][:klass] = klass.name
+        definition[:metadata][:on_halt] = { klass: klass.name }
 
         self
       end
