@@ -195,11 +195,17 @@ module Ductwork
       # NOTE: perform lifecycle hook execution outside of the transaction as
       # to not unnecessarily hold it open
       if halted
-        klass = JSON.parse(pipeline.definition).dig("metadata", "on_halt", "klass")
+        execute_on_halt(pipeline, error)
+      end
+    end
 
-        if klass.present?
-          Object.const_get(klass).new(error).execute
-        end
+    def execute_on_halt(pipeline, error)
+      klass = JSON
+              .parse(pipeline.definition)
+              .dig("metadata", "on_halt", "klass")
+
+      if klass.present?
+        Object.const_get(klass).new(error).execute
       end
     end
   end
