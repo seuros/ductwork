@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.7.1] (Unreleased)
+## [0.7.1]
 
 - chore: isolate on halt execution in `Ductwork::Job#execution_failed!`
 - chore: add pipeline definition metadata to `DefinitionBuilder` initializer
