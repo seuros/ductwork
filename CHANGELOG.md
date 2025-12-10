@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.8.1] (Unreleased)
+## [0.8.1]
 
 - fix: properly wrap "units of work" in rails application executor in pipeline advancer
 - fix: remove wrapping thread creation with the rails application executor - these threads are long-running so they should not be wrapped; later commits will wrap each individual "unit of work" with the executor as recommended
