@@ -10,8 +10,9 @@ module Ductwork
 
       def run # rubocop:todo Metrics/AbcSize, Metrics/MethodLength
         run_hooks_for(:start)
+
         while running_context.running?
-          id = Ductwork::Record.uncached do
+          id = Ductwork.wrap_with_app_executor do
             Ductwork::Pipeline
               .in_progress
               .where(klass: klass, claimed_for_advancing_at: nil)
@@ -24,12 +25,14 @@ module Ductwork
           end
 
           if id.present?
-            rows_updated = Ductwork::Pipeline
-                           .where(id: id, claimed_for_advancing_at: nil)
-                           .update_all(
-                             claimed_for_advancing_at: Time.current,
-                             status: "advancing"
-                           )
+            rows_updated = Ductwork.wrap_with_app_executor do
+              Ductwork::Pipeline
+                .where(id: id, claimed_for_advancing_at: nil)
+                .update_all(
+                  claimed_for_advancing_at: Time.current,
+                  status: "advancing"
+                )
+            end
 
             if rows_updated == 1
               Ductwork.logger.debug(
@@ -39,23 +42,31 @@ module Ductwork
                 role: :pipeline_advancer
               )
 
-              pipeline = Ductwork::Pipeline.find(id)
-              pipeline.advance!
+              pipeline = Ductwork.wrap_with_app_executor do
+                pipeline = Ductwork::Pipeline.find(id)
+                pipeline.advance!
 
-              Ductwork.logger.debug(
-                msg: "Pipeline advanced",
-                pipeline_id: id,
-                pipeline: klass,
-                role: :pipeline_advancer
-              )
+                Ductwork.logger.debug(
+                  msg: "Pipeline advanced",
+                  pipeline_id: id,
+                  pipeline: klass,
+                  role: :pipeline_advancer
+                )
 
-              # release the pipeline and set last advanced at so it doesnt block.
-              # we're not using a queue so we have to use a db timestamp
-              pipeline.update!(
-                claimed_for_advancing_at: nil,
-                last_advanced_at: Time.current,
-                status: "in_progress"
-              )
+                # rubocop:todo Metrics/BlockNesting
+                status = pipeline.completed? ? "completed" : "in_progress"
+                # rubocop:enable Metrics/BlockNesting
+
+                # release the pipeline and set last advanced at so it doesn't
+                # block. we're not using a queue so we have to use a db
+                # timestamp
+              ensure
+                pipeline.update!(
+                  claimed_for_advancing_at: nil,
+                  last_advanced_at: Time.current,
+                  status: status
+                )
+              end
             else
               Ductwork.logger.debug(
                 msg: "Did not claim pipeline, avoided race condition",
