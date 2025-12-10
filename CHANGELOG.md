@@ -2,6 +2,7 @@
 
 ## [0.8.1] (Unreleased)
 
+- fix: move pipeline advancer creation into thread initialization block - this effectively doesn't change anything but is useful in case we need to do something on the advancer thread in the initializer
 - fix: move job worker creation into thread initialization block - this effectively doesn't change anything but is useful in case we need to do something on the worker thread in the initializer
 
 ## [0.8.0]

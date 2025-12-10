@@ -46,11 +46,6 @@ module Ductwork
 
       def create_threads
         klasses.map do |klass|
-          pipeline_advancer = Ductwork::Processes::PipelineAdvancer.new(
-            running_context,
-            klass
-          )
-
           Ductwork.logger.debug(
             msg: "Creating new thread",
             role: :pipeline_advancer_runner,
@@ -58,7 +53,9 @@ module Ductwork
           )
           thread = Thread.new do
             Ductwork.wrap_with_app_executor do
-              pipeline_advancer.run
+              Ductwork::Processes::PipelineAdvancer
+                .new(running_context, klass)
+                .run
             end
           end
           thread.name = "ductwork.pipeline_advancer.#{klass}"
