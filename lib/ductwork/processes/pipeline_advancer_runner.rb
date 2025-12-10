@@ -52,11 +52,9 @@ module Ductwork
             pipeline: klass
           )
           thread = Thread.new do
-            Ductwork.wrap_with_app_executor do
-              Ductwork::Processes::PipelineAdvancer
-                .new(running_context, klass)
-                .run
-            end
+            Ductwork::Processes::PipelineAdvancer
+              .new(running_context, klass)
+              .run
           end
           thread.name = "ductwork.pipeline_advancer.#{klass}"
 
