@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.9.0] (Unreleased)
+
+- feat: add health check to job worker runner process - this is a basic check if a thread is healthy via `Thread#alive?` and restarts the thread if it is dead
+
 ## [0.8.1]
 
 - fix: properly wrap "units of work" in rails application executor in pipeline advancer

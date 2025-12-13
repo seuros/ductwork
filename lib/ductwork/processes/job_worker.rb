@@ -3,18 +3,44 @@
 module Ductwork
   module Processes
     class JobWorker
-      def initialize(pipeline, running_context)
+      attr_reader :thread, :last_hearthbeat_at
+
+      def initialize(pipeline, id)
         @pipeline = pipeline
-        @running_context = running_context
+        @id = id
+        @running_context = Ductwork::RunningContext.new
+        @thread = nil
+        @last_hearthbeat_at = Time.current
       end
 
-      def run
+      def start
+        @thread = Thread.new { work_loop }
+        @thread.name = "ductwork.job_worker.#{id}"
+      end
+
+      alias restart start
+
+      def alive?
+        thread&.alive? || false
+      end
+
+      def stop
+        running_context.shutdown!
+      end
+
+      private
+
+      attr_reader :pipeline, :id, :running_context
+
+      def work_loop
         run_hooks_for(:start)
+
         Ductwork.logger.debug(
           msg: "Entering main work loop",
           role: :job_worker,
           pipeline: pipeline
         )
+
         while running_context.running?
           Ductwork.logger.debug(
             msg: "Attempting to claim job",
@@ -37,21 +63,16 @@ module Ductwork
             )
             sleep(polling_timeout)
           end
+
+          @last_hearthbeat_at = Time.current
         end
 
-        shutdown
-      end
-
-      private
-
-      attr_reader :pipeline, :running_context
-
-      def shutdown
         Ductwork.logger.debug(
           msg: "Shutting down",
           role: :job_worker,
           pipeline: pipeline
         )
+
         run_hooks_for(:stop)
       end
 

@@ -6,7 +6,7 @@ module Ductwork
       def initialize(pipeline)
         @pipeline = pipeline
         @running_context = Ductwork::RunningContext.new
-        @threads = create_threads
+        @job_workers = []
 
         Signal.trap(:INT) { running_context.shutdown! }
         Signal.trap(:TERM) { running_context.shutdown! }
@@ -24,7 +24,9 @@ module Ductwork
       end
 
       def run
-        create_process!
+        create_process_record!
+        start_job_workers
+
         Ductwork.logger.debug(
           msg: "Entering main work loop",
           role: :job_worker_runner,
@@ -34,7 +36,7 @@ module Ductwork
         while running?
           # TODO: Increase or make configurable
           sleep(5)
-          attempt_synchronize_threads
+          check_thread_health
           report_heartbeat!
         end
 
@@ -43,37 +45,9 @@ module Ductwork
 
       private
 
-      attr_reader :pipeline, :running_context, :threads
+      attr_reader :pipeline, :running_context, :job_workers
 
-      def worker_count
-        Ductwork.configuration.job_worker_count(pipeline)
-      end
-
-      def create_threads
-        worker_count.times.map do |i|
-          Ductwork.logger.debug(
-            msg: "Creating new thread",
-            role: :job_worker_runner,
-            pipeline: pipeline
-          )
-          thread = Thread.new do
-            Ductwork::Processes::JobWorker
-              .new(pipeline, running_context)
-              .run
-          end
-          thread.name = "ductwork.job_worker.#{i}"
-
-          Ductwork.logger.debug(
-            msg: "Created new thread",
-            role: :job_worker_runner,
-            pipeline: pipeline
-          )
-
-          thread
-        end
-      end
-
-      def create_process!
+      def create_process_record!
         Ductwork.wrap_with_app_executor do
           Ductwork::Process.create!(
             pid: ::Process.pid,
@@ -83,17 +57,35 @@ module Ductwork
         end
       end
 
+      def start_job_workers
+        Ductwork.configuration.job_worker_count(pipeline).times do |i|
+          job_worker = Ductwork::Processes::JobWorker.new(pipeline, i)
+          job_workers.push(job_worker)
+          job_worker.start
+
+          Ductwork.logger.debug(
+            msg: "Created new job worker",
+            role: :job_worker_runner,
+            pipeline: pipeline
+          )
+        end
+      end
+
       def running?
         running_context.running?
       end
 
-      def attempt_synchronize_threads
+      def check_thread_health
         Ductwork.logger.debug(
           msg: "Attempting to synchronize threads",
           role: :job_worker_runner,
           pipeline: pipeline
         )
-        threads.each { |thread| thread.join(0.1) }
+        job_workers.each do |job_worker|
+          if !job_worker.alive?
+            job_worker.restart
+          end
+        end
         Ductwork.logger.debug(
           msg: "Synchronizing threads timed out",
           role: :job_worker_runner,
@@ -111,31 +103,36 @@ module Ductwork
 
       def shutdown!
         running_context.shutdown!
+        job_workers.each(&:stop)
         await_threads_graceful_shutdown
-        kill_remaining_threads
-        delete_process
+        kill_remaining_job_workers
+        delete_process_record!
       end
 
       def await_threads_graceful_shutdown
         timeout = Ductwork.configuration.job_worker_shutdown_timeout
         deadline = Time.current + timeout
 
-        Ductwork.logger.debug(msg: "Attempting graceful shutdown", role: :job_worker_runner)
-        while Time.current < deadline && threads.any?(&:alive?)
-          threads.each do |thread|
+        Ductwork.logger.debug(
+          msg: "Attempting graceful shutdown",
+          role: :job_worker_runner
+        )
+
+        while Time.current < deadline && job_workers.any?(&:alive?)
+          job_workers.each do |job_worker|
             break if Time.current < deadline
 
             # TODO: Maybe make this configurable. If there's a ton of workers
             # it may not even get to the "later" ones depending on the timeout
-            thread.join(1)
+            job_worker.thread.join(1)
           end
         end
       end
 
-      def kill_remaining_threads
-        threads.each do |thread|
-          if thread.alive?
-            thread.kill
+      def kill_remaining_job_workers
+        job_workers.each do |job_worker|
+          if job_worker.alive?
+            job_worker.thread.kill
             Ductwork.logger.debug(
               msg: "Killed thread",
               role: :job_worker_runner,
@@ -145,7 +142,7 @@ module Ductwork
         end
       end
 
-      def delete_process
+      def delete_process_record!
         Ductwork.wrap_with_app_executor do
           Ductwork::Process.find_by!(
             pid: ::Process.pid,
