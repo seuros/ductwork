@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.9.2] (Unreleased)
+## [0.9.2]
 
 - fix: correctly set last node to node id instead of class name
 
