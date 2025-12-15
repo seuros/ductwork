@@ -5,6 +5,7 @@ module Ductwork
     belongs_to :pipeline, class_name: "Ductwork::Pipeline"
     has_one :job, class_name: "Ductwork::Job", foreign_key: "step_id", dependent: :destroy
 
+    validates :node, presence: true
     validates :klass, presence: true
     validates :status, presence: true
     validates :to_transition, presence: true

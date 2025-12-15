@@ -17,34 +17,24 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
     end.pipeline_definition
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep MyFifthStep MySixthStep]
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1 MyFourthStep.2 MyFifthStep.3 MySixthStep.4]
     )
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep MyThirdStep], type: :divide },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1 MyThirdStep.1], type: :divide, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyFourthStep], type: :chain },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyFourthStep.2], type: :chain, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :chain },
-      ]
+    expect(definition[:edges]["MyThirdStep.1"]).to eq(
+      { to: %w[MyFifthStep.3], type: :chain, klass: "MyThirdStep" }
     )
-    expect(definition[:edges]["MyFourthStep"]).to eq(
-      [
-        { to: %w[MySixthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyFourthStep.2"]).to eq(
+      { to: %w[MySixthStep.4], type: :combine, klass: "MyFourthStep" }
     )
-    expect(definition[:edges]["MyFifthStep"]).to eq(
-      [
-        { to: %w[MySixthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyFifthStep.3"]).to eq(
+      { to: %w[MySixthStep.4], type: :combine, klass: "MyFifthStep" }
     )
-    expect(definition[:edges]["MySixthStep"]).to eq([])
+    expect(definition[:edges]["MySixthStep.4"]).to eq({ klass: "MySixthStep" })
   end
 
   it "correctly handles combining multiple branches" do
@@ -60,34 +50,24 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
     end.pipeline_definition
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep MyFifthStep MySixthStep]
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1 MyFourthStep.2 MyFifthStep.2 MySixthStep.3]
     )
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep MyThirdStep], type: :divide },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1 MyThirdStep.1], type: :divide, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyFourthStep MyFifthStep], type: :divide },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyFourthStep.2 MyFifthStep.2], type: :divide, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq(
-      [
-        { to: %w[MySixthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyThirdStep.1"]).to eq(
+      { to: %w[MySixthStep.3], type: :combine, klass: "MyThirdStep" }
     )
-    expect(definition[:edges]["MyFourthStep"]).to eq(
-      [
-        { to: %w[MySixthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyFourthStep.2"]).to eq(
+      { to: %w[MySixthStep.3], type: :combine, klass: "MyFourthStep" }
     )
-    expect(definition[:edges]["MyFifthStep"]).to eq(
-      [
-        { to: %w[MySixthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyFifthStep.2"]).to eq(
+      { to: %w[MySixthStep.3], type: :combine, klass: "MyFifthStep" }
     )
-    expect(definition[:edges]["MySixthStep"]).to eq([])
+    expect(definition[:edges]["MySixthStep.3"]).to eq({ klass: "MySixthStep" })
   end
 
   it "correctly handles expanding and collapsing sub-branches" do
@@ -104,30 +84,22 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
     end.pipeline_definition
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep MyFifthStep MySixthStep]
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1 MyFourthStep.2 MyFifthStep.3 MySixthStep.4]
     )
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep MyThirdStep], type: :divide },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1 MyThirdStep.1], type: :divide, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyFourthStep], type: :chain },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyFourthStep.2], type: :chain, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq([])
-    expect(definition[:edges]["MyFourthStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :expand },
-      ]
+    expect(definition[:edges]["MyThirdStep.1"]).to eq({ klass: "MyThirdStep" })
+    expect(definition[:edges]["MyFourthStep.2"]).to eq(
+      { to: %w[MyFifthStep.3], type: :expand, klass: "MyFourthStep" }
     )
-    expect(definition[:edges]["MyFifthStep"]).to eq(
-      [
-        { to: %w[MySixthStep], type: :collapse },
-      ]
+    expect(definition[:edges]["MyFifthStep.3"]).to eq(
+      { to: %w[MySixthStep.4], type: :collapse, klass: "MyFifthStep" }
     )
-    expect(definition[:edges]["MySixthStep"]).to eq([])
+    expect(definition[:edges]["MySixthStep.4"]).to eq({ klass: "MySixthStep" })
   end
 
   it "correctly handles reusing the same step class" do
@@ -142,16 +114,19 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
     end.pipeline_definition
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MyFirstStep MyFirstStep MyFirstStep]
+      %w[MyFirstStep.0 MyFirstStep.1 MyFirstStep.2 MyFirstStep.3]
     )
-    expect(definition[:edges].length).to eq(1)
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: ["MyFirstStep"], type: :chain },
-        { to: ["MyFirstStep"], type: :expand },
-        { to: ["MyFirstStep"], type: :collapse },
-      ]
+    expect(definition[:edges].length).to eq(4)
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: ["MyFirstStep.1"], type: :chain, klass: "MyFirstStep" }
     )
+    expect(definition[:edges]["MyFirstStep.1"]).to eq(
+      { to: ["MyFirstStep.2"], type: :expand, klass: "MyFirstStep" }
+    )
+    expect(definition[:edges]["MyFirstStep.2"]).to eq(
+      { to: ["MyFirstStep.3"], type: :collapse, klass: "MyFirstStep" }
+    )
+    expect(definition[:edges]["MyFirstStep.3"]).to eq({ klass: "MyFirstStep" })
   end
 
   it "correctly handles chaining while expanded before collapsing" do
@@ -167,16 +142,19 @@ RSpec.describe "Pipeline definitions" do # rubocop:disable RSpec/DescribeClass
     end.pipeline_definition
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep MyFifthStep]
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.2 MyFourthStep.3 MyFifthStep.4]
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [{ to: ["MyThirdStep"], type: :chain }]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: ["MySecondStep.1"], type: :expand, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq(
-      [{ to: ["MyFourthStep"], type: :chain }]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: ["MyThirdStep.2"], type: :chain, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyFourthStep"]).to eq(
-      [{ to: ["MyFifthStep"], type: :collapse }]
+    expect(definition[:edges]["MyThirdStep.2"]).to eq(
+      { to: ["MyFourthStep.3"], type: :chain, klass: "MyThirdStep" }
+    )
+    expect(definition[:edges]["MyFourthStep.3"]).to eq(
+      { to: ["MyFifthStep.4"], type: :collapse, klass: "MyFourthStep" }
     )
   end
 end

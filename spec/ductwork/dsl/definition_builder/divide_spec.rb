@@ -23,15 +23,13 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#divide" do
       .divide(to: [MySecondStep, MyThirdStep])
       .complete
 
-    expect(definition[:nodes]).to eq(%w[MyFirstStep MySecondStep MyThirdStep])
+    expect(definition[:nodes]).to eq(%w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1])
     expect(definition[:edges].length).to eq(3)
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep MyThirdStep], type: :divide },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1 MyThirdStep.1], type: :divide, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq([])
-    expect(definition[:edges]["MyThirdStep"]).to eq([])
+    expect(definition[:edges]["MySecondStep.1"]).to eq({ klass: "MySecondStep" })
+    expect(definition[:edges]["MyThirdStep.1"]).to eq({ klass: "MyThirdStep" })
   end
 
   it "yields the new branches if a block is given" do

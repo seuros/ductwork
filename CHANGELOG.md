@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.9.1] (Unreleased)
+
+- fix!: assign unique node names (klass name and stage) in pipeline definition DAG - this is a BREAKING CHANGE because the pipeline definition structure has changed
+
 ## [0.9.0]
 
 - feat: add health check to job worker runner process - this is a basic check if a thread is healthy via `Thread#alive?` and restarts the thread if it is dead

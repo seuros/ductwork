@@ -30,6 +30,7 @@ FactoryBot.define do
   end
 
   factory :step, class: "Ductwork::Step" do
+    node { "MyFirstStep.0" }
     klass { "MyFirstStep" }
     started_at { Time.current }
     status { Ductwork::Step.statuses.keys.sample }

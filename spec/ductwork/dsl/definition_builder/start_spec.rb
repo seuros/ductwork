@@ -12,9 +12,9 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#start" do
   it "adds the initial branch and step to the definition" do
     definition = builder.start(MyFirstStep).complete
 
-    expect(definition[:nodes]).to eq(["MyFirstStep"])
+    expect(definition[:nodes]).to eq(["MyFirstStep.0"])
     expect(definition[:edges].length).to eq(1)
-    expect(definition[:edges]["MyFirstStep"]).to eq([])
+    expect(definition[:edges]["MyFirstStep.0"]).to eq({ klass: "MyFirstStep" })
   end
 
   it "raises if the argument is not a class" do

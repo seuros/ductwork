@@ -15,23 +15,24 @@ module Ductwork
         }
         @divergences = []
         @last_nodes = []
+        @stages = []
       end
 
       def start(klass)
         validate_classes!(klass)
         validate_start_once!
         add_new_nodes(klass)
+        increment_position
 
         self
       end
 
-      # NOTE: there is a bug here that does not allow the user to reuse step
-      # classes in the same pipeline. i'll fix this later
       def chain(klass)
         validate_classes!(klass)
         validate_definition_started!(action: "chaining")
         add_edge_to_last_nodes(klass, type: :chain)
         add_new_nodes(klass)
+        increment_position
 
         self
       end
@@ -41,13 +42,13 @@ module Ductwork
         validate_definition_started!(action: "dividing chain")
         add_edge_to_last_nodes(*to, type: :divide)
         add_new_nodes(*to)
-
+        increment_position
         divergences.push(:divide)
 
         if block_given?
           branches = to.map do |klass|
             Ductwork::DSL::BranchBuilder
-              .new(klass:, definition:)
+              .new(klass:, definition:, stages:)
           end
 
           yield branches
@@ -64,15 +65,14 @@ module Ductwork
         divergences.pop
 
         last_nodes = definition[:nodes].reverse.select do |node|
-          definition[:edges][node].empty?
+          definition.dig(:edges, node, :to).blank?
         end
         last_nodes.each do |node|
-          definition[:edges][node] << {
-            to: [into.name],
-            type: :combine,
-          }
+          definition[:edges][node][:to] = ["#{into.name}.#{stages.length}"]
+          definition[:edges][node][:type] = :combine
         end
         add_new_nodes(into)
+        increment_position
 
         self
       end
@@ -82,7 +82,7 @@ module Ductwork
         validate_definition_started!(action: "expanding chain")
         add_edge_to_last_nodes(to, type: :expand)
         add_new_nodes(to)
-
+        increment_position
         divergences.push(:expand)
 
         self
@@ -94,7 +94,7 @@ module Ductwork
         validate_can_collapse!
         add_edge_to_last_nodes(into, type: :collapse)
         add_new_nodes(into)
-
+        increment_position
         divergences.pop
 
         self
@@ -116,7 +116,7 @@ module Ductwork
 
       private
 
-      attr_reader :definition, :last_nodes, :divergences
+      attr_reader :definition, :last_nodes, :divergences, :stages
 
       def validate_classes!(klasses)
         valid = Array(klasses).all? do |klass|
@@ -165,22 +165,27 @@ module Ductwork
       end
 
       def add_new_nodes(*klasses)
-        nodes = klasses.map(&:name)
+        nodes = klasses.map { |klass| "#{klass.name}.#{stages.length}" }
         @last_nodes = Array(nodes)
 
         definition[:nodes].push(*nodes)
         klasses.each do |klass|
-          definition[:edges][klass.name] ||= []
+          node = "#{klass.name}.#{stages.length}"
+          definition[:edges][node] ||= { klass: klass.name }
         end
       end
 
       def add_edge_to_last_nodes(*klasses, type:)
         last_nodes.each do |last_node|
-          definition[:edges][last_node] << {
-            to: klasses.map(&:name),
-            type: type,
-          }
+          to = klasses.map { |klass| "#{klass.name}.#{stages.length}" }
+          definition[:edges][last_node][:to] = to
+          definition[:edges][last_node][:type] = type
+          definition[:edges][last_node][:klass] ||= klass
         end
+      end
+
+      def increment_position
+        stages.push(1)
       end
     end
   end

@@ -8,16 +8,22 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
   context "when the next step is 'collapse'" do
     let(:definition) do
       {
-        nodes: %w[MyStepA MyStepB MyStepC],
+        nodes: %w[MyStepA.0 MyStepB.1 MyStepC.2],
         edges: {
-          "MyStepA" => [{ to: %w[MyStepB], type: "expand" }],
-          "MyStepB" => [{ to: %w[MyStepC], type: "collapse" }],
-          "MyStepC" => [],
+          "MyStepA.0" => { to: %w[MyStepB.1], type: "expand", klass: "MyStepA" },
+          "MyStepB.1" => { to: %w[MyStepC.2], type: "collapse", klass: "MyStepB" },
+          "MyStepC.2" => { klass: "MyStepC" },
         },
       }.to_json
     end
     let(:step) do
-      create(:step, status: :advancing, klass: "MyStepB", pipeline: pipeline)
+      create(
+        :step,
+        status: :advancing,
+        node: "MyStepB.1",
+        klass: "MyStepB",
+        pipeline: pipeline
+      )
     end
     let(:output_payload) { { payload: }.to_json }
     let(:payload) { 1 }
@@ -28,6 +34,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
         :step,
         2,
         status: :advancing,
+        node: "MyStepB.1",
         klass: "MyStepB",
         pipeline: pipeline
       )
@@ -43,6 +50,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
         .and change(Ductwork::Job, :count).by(1)
       step = Ductwork::Step.last
       expect(step).to be_in_progress
+      expect(step.node).to eq("MyStepC.2")
       expect(step.klass).to eq("MyStepC")
       expect(step.to_transition).to eq("collapse")
     end
@@ -63,6 +71,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
             3,
             status: :advancing,
             to_transition: :collapse,
+            node: "MyStepD.2",
             klass: "MyStepD",
             pipeline: pipeline
           ),
@@ -71,6 +80,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
             3,
             status: :advancing,
             to_transition: :collapse,
+            node: "MyStepE.2",
             klass: "MyStepE",
             pipeline: pipeline
           ),
@@ -78,15 +88,15 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
       end
       let(:definition) do
         {
-          nodes: %w[MyStepA MyStepB MyStepC MyStepD MyStepE MyStepF MyStepG],
+          nodes: %w[MyStepA.0 MyStepB.1 MyStepC.1 MyStepD.2 MyStepE.2 MyStepF.3 MyStepG.3],
           edges: {
-            "MyStepA" => [{ to: %w[MyStepB MyStepC], type: "divide" }],
-            "MyStepB" => [{ to: %w[MyStepD], type: "expand" }],
-            "MyStepC" => [{ to: %w[MyStepE], type: "expand" }],
-            "MyStepD" => [{ to: %w[MyStepF], type: "collapse" }],
-            "MyStepE" => [{ to: %w[MyStepG], type: "collapse" }],
-            "MyStepF" => [],
-            "MyStepG" => [],
+            "MyStepA.0" => { to: %w[MyStepB.1 MyStepC.1], type: "divide", klass: "MyStepA" },
+            "MyStepB.1" => { to: %w[MyStepD.2], type: "expand", klass: "MyStepB" },
+            "MyStepC.1" => { to: %w[MyStepE.2], type: "expand", klass: "MyStepC" },
+            "MyStepD.2" => { to: %w[MyStepF.3], type: "collapse", klass: "MyStepD" },
+            "MyStepE.2" => { to: %w[MyStepG.3], type: "collapse", klass: "MyStepE" },
+            "MyStepF.3" => { klass: "MyStepF" },
+            "MyStepG.3" => { klass: "MyStepG" },
           },
         }.to_json
       end
@@ -104,7 +114,9 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
           pipeline.advance!
         end.to change(Ductwork::Step, :count).by(2)
           .and change(Ductwork::Job, :count).by(2)
+        nodes = Ductwork::Step.pluck(:node).last(2)
         klasses = Ductwork::Step.pluck(:klass).last(2)
+        expect(nodes).to eq(%w[MyStepF.3 MyStepG.3])
         expect(klasses).to eq(%w[MyStepF MyStepG])
       end
     end

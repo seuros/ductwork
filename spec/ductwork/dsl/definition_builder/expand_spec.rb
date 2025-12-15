@@ -12,14 +12,12 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#expand" do
   it "adds a step to the definition" do
     definition = builder.start(MyFirstStep).expand(to: MySecondStep).complete
 
-    expect(definition[:nodes]).to eq(%w[MyFirstStep MySecondStep])
+    expect(definition[:nodes]).to eq(%w[MyFirstStep.0 MySecondStep.1])
     expect(definition[:edges].length).to eq(2)
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep], type: :expand },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1], type: :expand, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq([])
+    expect(definition[:edges]["MySecondStep.1"]).to eq({ klass: "MySecondStep" })
   end
 
   it "raises if the argument is not a class" do

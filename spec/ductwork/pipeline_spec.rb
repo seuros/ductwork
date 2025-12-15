@@ -257,6 +257,7 @@ RSpec.describe Ductwork::Pipeline do
       end.to change(Ductwork::Step, :count).by(1)
       step = pipeline.steps.reload.first
       expect(step).to be_start
+      expect(step.node).to eq("MyFirstStep.0")
       expect(step.klass).to eq("MyFirstStep")
       expect(step.started_at).to be_present
     end

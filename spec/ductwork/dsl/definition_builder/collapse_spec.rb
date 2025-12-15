@@ -19,19 +19,17 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#collapse" do
       .collapse(into: MyThirdStep)
       .complete
 
-    expect(definition[:nodes]).to eq(%w[MyFirstStep MySecondStep MyThirdStep])
+    expect(definition[:nodes]).to eq(
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.2]
+    )
     expect(definition[:edges].length).to eq(3)
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep], type: :expand },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1], type: :expand, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyThirdStep], type: :collapse },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyThirdStep.2], type: :collapse, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq([])
+    expect(definition[:edges]["MyThirdStep.2"]).to eq({ klass: "MyThirdStep" })
   end
 
   it "raises if the argument is not a class" do

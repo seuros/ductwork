@@ -4,6 +4,7 @@ class CreateDuctworkSteps < ActiveRecord::Migration[<%= Rails::VERSION::MAJOR %>
   def change
     create_table :ductwork_steps do |table|
       table.belongs_to :pipeline, index: true, null: false, foreign_key: { to_table: :ductwork_pipelines }
+      table.string :node, null: false
       table.string :klass, null: false
       table.string :to_transition, null: false
       table.timestamp :started_at
@@ -14,9 +15,9 @@ class CreateDuctworkSteps < ActiveRecord::Migration[<%= Rails::VERSION::MAJOR %>
       table.timestamps null: false
     end
 
-    add_index :ductwork_steps, %i[pipeline_id status klass]
-    add_index :ductwork_steps, %i[pipeline_id klass status]
-    add_index :ductwork_steps, %i[status klass]
+    add_index :ductwork_steps, %i[pipeline_id status node]
+    add_index :ductwork_steps, %i[pipeline_id node status]
+    add_index :ductwork_steps, %i[status node]
     add_index :ductwork_steps, %i[pipeline_id status]
   end
 end

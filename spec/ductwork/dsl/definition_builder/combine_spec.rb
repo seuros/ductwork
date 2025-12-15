@@ -28,25 +28,19 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#combine" do
       .complete
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep]
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1 MyFourthStep.2]
     )
     expect(definition[:edges].length).to eq(4)
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep MyThirdStep], type: :divide },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      { to: %w[MySecondStep.1 MyThirdStep.1], type: :divide, klass: "MyFirstStep" }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyFourthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyFourthStep.2], type: :combine, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq(
-      [
-        { to: %w[MyFourthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyThirdStep.1"]).to eq(
+      { to: %w[MyFourthStep.2], type: :combine, klass: "MyThirdStep" }
     )
-    expect(definition[:edges]["MyFourthStep"]).to eq([])
+    expect(definition[:edges]["MyFourthStep.2"]).to eq({ klass: "MyFourthStep" })
   end
 
   it "merges multiple branches together into a new step" do
@@ -56,21 +50,18 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#combine" do
       .combine(into: MyFifthStep)
       .complete
 
+    expect(definition[:nodes]).to eq(
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1 MyFourthStep.1 MyFifthStep.2]
+    )
     expect(definition[:edges].length).to eq(5)
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyFifthStep.2], type: :combine, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyThirdStep.1"]).to eq(
+      { to: %w[MyFifthStep.2], type: :combine, klass: "MyThirdStep" }
     )
-    expect(definition[:edges]["MyFourthStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyFourthStep.1"]).to eq(
+      { to: %w[MyFifthStep.2], type: :combine, klass: "MyFourthStep" }
     )
   end
 
@@ -80,30 +71,26 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#combine" do
     end.complete
 
     expect(definition[:nodes]).to eq(
-      %w[MyFirstStep MySecondStep MyThirdStep MyFourthStep MyFifthStep]
+      %w[MyFirstStep.0 MySecondStep.1 MyThirdStep.1 MyFourthStep.1 MyFifthStep.2]
     )
     expect(definition[:edges].length).to eq(5)
-    expect(definition[:edges]["MyFirstStep"]).to eq(
-      [
-        { to: %w[MySecondStep MyThirdStep MyFourthStep], type: :divide },
-      ]
+    expect(definition[:edges]["MyFirstStep.0"]).to eq(
+      {
+        to: %w[MySecondStep.1 MyThirdStep.1 MyFourthStep.1],
+        type: :divide,
+        klass: "MyFirstStep",
+      }
     )
-    expect(definition[:edges]["MySecondStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MySecondStep.1"]).to eq(
+      { to: %w[MyFifthStep.2], type: :combine, klass: "MySecondStep" }
     )
-    expect(definition[:edges]["MyThirdStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyThirdStep.1"]).to eq(
+      { to: %w[MyFifthStep.2], type: :combine, klass: "MyThirdStep" }
     )
-    expect(definition[:edges]["MyFourthStep"]).to eq(
-      [
-        { to: %w[MyFifthStep], type: :combine },
-      ]
+    expect(definition[:edges]["MyFourthStep.1"]).to eq(
+      { to: %w[MyFifthStep.2], type: :combine, klass: "MyFourthStep" }
     )
-    expect(definition[:edges]["MyFifthStep"]).to eq([])
+    expect(definition[:edges]["MyFifthStep.2"]).to eq({ klass: "MyFifthStep" })
   end
 
   it "raises if the argument is not a class" do

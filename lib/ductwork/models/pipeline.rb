@@ -56,7 +56,8 @@ module Ductwork
           raise DefinitionError, "Pipeline must be defined before triggering"
         end
 
-        step_klass = pipeline_definition.dig(:nodes, 0)
+        node = pipeline_definition.dig(:nodes, 0)
+        klass = pipeline_definition.dig(:edges, node, :klass)
         definition = JSON.dump(pipeline_definition)
 
         pipeline = Record.transaction do
@@ -70,7 +71,8 @@ module Ductwork
             last_advanced_at: Time.current
           )
           step = p.steps.create!(
-            klass: step_klass,
+            node: node,
+            klass: klass,
             status: :in_progress,
             to_transition: :start,
             started_at: Time.current
@@ -95,12 +97,12 @@ module Ductwork
       # advancing records which may cause memory issues. something to
       # watch out for here and maybe add in config to use AR relation
       # at certain counts or even memory limits.
-      advancing_steps = steps.advancing.pluck(:id, :klass)
+      advancing_steps = steps.advancing.pluck(:id, :node, :klass)
       advancing_ids = advancing_steps.map(&:first)
       edges = find_edges(advancing_steps)
 
       Ductwork::Record.transaction do
-        if edges.nil? || edges.values.all?(&:empty?)
+        if edges.nil? || edges.all? { |_, attrs| attrs[:to].blank? }
           conditionally_complete_pipeline(advancing_ids)
         else
           advance_to_next_steps_by_type(edges, advancing_ids)
@@ -114,23 +116,24 @@ module Ductwork
 
     private
 
-    def create_step_and_enqueue_job(edge:, input_arg:, klass: nil)
+    def create_step_and_enqueue_job(edge:, input_arg:, node: nil)
       status = :in_progress
       started_at = Time.current
       # NOTE: "chain" is used by ActiveRecord so we have to call
       # this enum value "default" :sad:
       to_transition = edge[:type] == "chain" ? "default" : edge[:type]
-      klass ||= edge.fetch(:to).sole
+      node ||= edge[:to].sole
+      klass = parsed_definition.dig(:edges, node, :klass)
 
-      next_step = steps.create!(klass:, status:, to_transition:, started_at:)
+      next_step = steps.create!(node:, klass:, status:, to_transition:, started_at:)
       Ductwork::Job.enqueue(next_step, input_arg)
     end
 
     def find_edges(advancing_steps)
       if advancing_steps.any?
-        klasses = advancing_steps.map(&:last)
+        nodes = advancing_steps.map(&:second)
 
-        parsed_definition.fetch(:edges, {}).select { |k| k.in?(klasses) }
+        parsed_definition.fetch(:edges, {}).select { |k| k.in?(nodes) }
       end
     end
 
@@ -158,26 +161,25 @@ module Ductwork
     def advance_to_next_steps_by_type(edges, advancing_ids)
       steps.where(id: advancing_ids).update_all(status: :completed, completed_at: Time.current)
 
-      if edges.all? { |_, v| v.dig(-1, :type) == "combine" }
+      if edges.all? { |_, attrs| attrs[:type] == "combine" }
         conditionally_combine_next_steps(edges, advancing_ids)
       else
-        edges.each do |step_klass, step_edges|
-          edge = step_edges[-1]
-
-          if edge[:type] == "collapse"
-            conditionally_collapse_next_steps(step_klass, edge, advancing_ids)
+        edges.each do |node, attrs|
+          if attrs[:type] == "collapse"
+            conditionally_collapse_next_steps(node, attrs, advancing_ids)
           else
-            advance_non_merging_steps(step_klass, edge, advancing_ids)
+            advance_non_merging_steps(attrs, advancing_ids)
           end
         end
       end
       log_pipeline_advanced(edges)
     end
 
-    def advance_non_merging_steps(step_klass, edge, advancing_ids)
+    def advance_non_merging_steps(edge, advancing_ids)
       to_transition = edge[:type]
+      klass = edge[:klass]
 
-      steps.where(id: advancing_ids, klass: step_klass).find_each do |step|
+      steps.where(id: advancing_ids, klass: klass).find_each do |step|
         if to_transition.in?(%w[chain divide])
           advance_to_next_steps(step.id, edge)
         elsif to_transition == "expand"
@@ -205,15 +207,15 @@ module Ductwork
       if too_many
         halted!
       else
-        edge[:to].each do |klass|
+        edge[:to].each do |node|
           input_arg = Ductwork::Job.find_by(step_id:).return_value
-          create_step_and_enqueue_job(edge:, input_arg:, klass:)
+          create_step_and_enqueue_job(edge:, input_arg:, node:)
         end
       end
     end
 
     def conditionally_combine_next_steps(edges, advancing_ids)
-      if steps.where(status: %w[pending in_progress], klass: edges.keys).none?
+      if steps.where(status: %w[pending in_progress], node: edges.keys).none?
         combine_next_steps(edges, advancing_ids)
       else
         Ductwork.logger.debug(
@@ -225,13 +227,13 @@ module Ductwork
     end
 
     def combine_next_steps(edges, advancing_ids)
-      edge = edges.values.sample[-1]
+      edge = edges.values.sample
       groups = steps
                .where(id: advancing_ids)
-               .group(:klass)
+               .group(:node)
                .count
                .keys
-               .map { |k| steps.where(id: advancing_ids).where(klass: k) }
+               .map { |node| steps.where(id: advancing_ids).where(node:) }
 
       groups.first.zip(*groups[1..]).each do |group|
         input_arg = Ductwork::Job
@@ -257,8 +259,8 @@ module Ductwork
       end
     end
 
-    def conditionally_collapse_next_steps(step_klass, edge, advancing_ids)
-      if steps.where(status: %w[pending in_progress], klass: step_klass).none?
+    def conditionally_collapse_next_steps(node, edge, advancing_ids)
+      if steps.where(status: %w[pending in_progress], node: node).none?
         collapse_next_steps(edge, advancing_ids)
       else
         Ductwork.logger.debug(

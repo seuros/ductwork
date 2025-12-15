@@ -13,7 +13,7 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
     it "adds the on halt klass to the definition as metadata" do
       definition = builder.start(MyFirstStep).on_halt(MyHaltStep).complete
 
-      expect(definition[:nodes]).to eq(["MyFirstStep"])
+      expect(definition[:nodes]).to eq(["MyFirstStep.0"])
       expect(definition[:metadata]).to eq(on_halt: { klass: "MyHaltStep" })
     end
 
@@ -66,8 +66,8 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder do
 
       expect(definition).to eq(
         metadata: {},
-        nodes: %w[MyFirstStep],
-        edges: { "MyFirstStep" => [] }
+        nodes: %w[MyFirstStep.0],
+        edges: { "MyFirstStep.0" => { klass: "MyFirstStep" } }
       )
     end
   end

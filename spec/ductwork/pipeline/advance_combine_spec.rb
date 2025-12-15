@@ -8,17 +8,23 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
   context "when the next step is 'combine'" do
     let(:definition) do
       {
-        nodes: %w[MyStepA MyStepB MyStepC MyStepD],
+        nodes: %w[MyStepA.0 MyStepB.1 MyStepC.1 MyStepD.2],
         edges: {
-          "MyStepA" => [{ to: %w[MyStepB MyStepC], type: "divide" }],
-          "MyStepB" => [{ to: %w[MyStepD], type: "combine" }],
-          "MyStepC" => [{ to: %w[MyStepD], type: "combine" }],
-          "MyStepD" => [],
+          "MyStepA.0" => { to: %w[MyStepB.1 MyStepC.1], type: "divide", klass: "MyStepA" },
+          "MyStepB.1" => { to: %w[MyStepD.2], type: "combine", klass: "MyStepB" },
+          "MyStepC.1" => { to: %w[MyStepD.2], type: "combine", klass: "MyStepC" },
+          "MyStepD.2" => { klass: "MyStepD" },
         },
       }.to_json
     end
     let(:step) do
-      create(:step, status: :advancing, klass: "MyStepC", pipeline: pipeline)
+      create(
+        :step,
+        status: :advancing,
+        node: "MyStepC.1",
+        klass: "MyStepC",
+        pipeline: pipeline
+      )
     end
     let(:output_payload) { { payload: }.to_json }
     let(:payload) { %w[a b c] }
@@ -28,6 +34,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
       other_step = create(
         :step,
         status: :advancing,
+        node: "MyStepB.1",
         klass: "MyStepB",
         pipeline: pipeline
       )
@@ -42,6 +49,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
         .and change(Ductwork::Job, :count).by(1)
       step = Ductwork::Step.last
       expect(step).to be_in_progress
+      expect(step.node).to eq("MyStepD.2")
       expect(step.klass).to eq("MyStepD")
       expect(step.to_transition).to eq("combine")
     end
@@ -64,6 +72,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
             3,
             status: :advancing,
             to_transition: :combine,
+            node: "MyStepC.2",
             klass: "MyStepC",
             pipeline: pipeline
           ),
@@ -72,6 +81,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
             3,
             status: :advancing,
             to_transition: :combine,
+            node: "MyStepD.2",
             klass: "MyStepD",
             pipeline: pipeline
           ),
@@ -80,6 +90,7 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
             3,
             status: :advancing,
             to_transition: :combine,
+            node: "MyStepE.2",
             klass: "MyStepE",
             pipeline: pipeline
           ),
@@ -89,12 +100,12 @@ RSpec.describe Ductwork::Pipeline, "#advance" do
         {
           nodes: %w[MyStepA MyStepB MyStepC MyStepD MyStepE MyStepF],
           edges: {
-            "MyStepA" => [{ to: %w[MyStepB], type: "expand" }],
-            "MyStepB" => [{ to: %w[MyStepC MyStepD MyStepE], type: "divide" }],
-            "MyStepC" => [{ to: %w[MyStepF], type: "combine" }],
-            "MyStepD" => [{ to: %w[MyStepF], type: "combine" }],
-            "MyStepE" => [{ to: %w[MyStepF], type: "combine" }],
-            "MyStepF" => [],
+            "MyStepA.0" => { to: %w[MyStepB.1], type: "expand", klass: "MyStepA" },
+            "MyStepB.1" => { to: %w[MyStepC.2 MyStepD.2 MyStepE.2], type: "divide", klass: "MyStepB" },
+            "MyStepC.2" => { to: %w[MyStepF.3], type: "combine", klass: "MyStepC" },
+            "MyStepD.2" => { to: %w[MyStepF.3], type: "combine", klass: "MyStepD" },
+            "MyStepE.2" => { to: %w[MyStepF.3], type: "combine", klass: "MyStepE" },
+            "MyStepF.3" => { klass: "MyStepF" },
           },
         }.to_json
       end
