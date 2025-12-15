@@ -87,7 +87,7 @@ module Ductwork
         definition[:nodes].push(next_klass_name)
         definition[:edges][next_klass_name] ||= { klass: into.name }
         stages.push(1)
-        @last_node = into.name
+        @last_node = next_klass_name
         @expansions -= 1
 
         self
