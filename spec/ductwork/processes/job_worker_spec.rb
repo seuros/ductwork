@@ -25,12 +25,12 @@ RSpec.describe Ductwork::Processes::JobWorker do
       be_now = be_within(1.second).of(Time.current)
       job_worker = described_class.new(pipeline, id)
 
-      expect(job_worker.last_hearthbeat_at).to be_now
+      expect(job_worker.last_heartbeat_at).to be_now
 
       job_worker.start
       sleep(1)
 
-      expect(job_worker.last_hearthbeat_at).to be_now
+      expect(job_worker.last_heartbeat_at).to be_now
 
       shutdown(job_worker)
     end

@@ -3,14 +3,14 @@
 module Ductwork
   module Processes
     class JobWorker
-      attr_reader :thread, :last_hearthbeat_at, :job
+      attr_reader :thread, :last_heartbeat_at, :job
 
       def initialize(pipeline, id)
         @pipeline = pipeline
         @id = id
         @running_context = Ductwork::RunningContext.new
         @thread = nil
-        @last_hearthbeat_at = Time.current
+        @last_heartbeat_at = Time.current
       end
 
       def start
@@ -67,7 +67,7 @@ module Ductwork
             sleep(polling_timeout)
           end
 
-          @last_hearthbeat_at = Time.current
+          @last_heartbeat_at = Time.current
         end
 
         Ductwork.logger.debug(

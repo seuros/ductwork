@@ -2,6 +2,7 @@
 
 ## [0.11.2] (Unreleased)
 
+- fix: correct spelling of `last_heartbeat_at` variable
 - fix: flip inverted deadline check in job worker runner
 - fix: flip inverted deadline check in pipeline advancer runner
 - fix: reference `thread` variable from `job_worker`, not top-level
