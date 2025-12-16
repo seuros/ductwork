@@ -3,7 +3,7 @@
 module Ductwork
   module Processes
     class JobWorker
-      attr_reader :thread, :last_hearthbeat_at
+      attr_reader :thread, :last_hearthbeat_at, :job
 
       def initialize(pipeline, id)
         @pipeline = pipeline
@@ -47,7 +47,8 @@ module Ductwork
             role: :job_worker,
             pipeline: pipeline
           )
-          job = Ductwork.wrap_with_app_executor do
+
+          @job = Ductwork.wrap_with_app_executor do
             Job.claim_latest(pipeline)
           end
 
@@ -55,6 +56,8 @@ module Ductwork
             Ductwork.wrap_with_app_executor do
               job.execute(pipeline)
             end
+
+            @job = nil
           else
             Ductwork.logger.debug(
               msg: "No job to claim, looping",

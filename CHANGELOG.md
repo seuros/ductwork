@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.11.0] (Unreleased)
+
+- feat: expose `job` attribute during claim and execution in job worker
+
 ## [0.10.0]
 
 - chore: update thread health-check logging
