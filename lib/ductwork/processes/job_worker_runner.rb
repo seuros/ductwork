@@ -126,7 +126,7 @@ module Ductwork
 
         while Time.current < deadline && job_workers.any?(&:alive?)
           job_workers.each do |job_worker|
-            break if Time.current < deadline
+            break if Time.current > deadline
 
             # TODO: Maybe make this configurable. If there's a ton of workers
             # it may not even get to the "later" ones depending on the timeout
