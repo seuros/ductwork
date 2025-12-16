@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.11.0] (Unreleased)
+## [0.11.0]
 
 - feat: expose `job` attribute during claim and execution in job worker
 
