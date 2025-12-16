@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.11.1] (Unreleased)
+## [0.11.1]
 
 - fix: use info-level for job worker restart log messages
 - fix: use "killed" result in job execution log message when job worker is restarted
