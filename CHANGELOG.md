@@ -2,6 +2,7 @@
 
 ## [0.11.1] (Unreleased)
 
+- fix: use info-level for job worker restart log messages
 - fix: use "killed" result in job execution log message when job worker is restarted
 
 ## [0.11.0]

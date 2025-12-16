@@ -85,7 +85,7 @@ module Ductwork
           if !job_worker.alive?
             job_worker.restart
 
-            Ductwork.logger.debug(
+            Ductwork.logger.info(
               msg: "Restarted thread",
               role: :job_worker_runner,
               pipeline: pipeline
