@@ -123,7 +123,7 @@ module Ductwork
           pipeline: pipeline,
           job_id: id,
           job_klass: klass,
-          result: result,
+          result: result || "killed",
           role: :job_worker
         )
       end
