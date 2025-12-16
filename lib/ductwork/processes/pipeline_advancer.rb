@@ -56,15 +56,14 @@ module Ductwork
                 # rubocop:todo Metrics/BlockNesting
                 status = pipeline.completed? ? "completed" : "in_progress"
                 # rubocop:enable Metrics/BlockNesting
-
+              ensure
                 # release the pipeline and set last advanced at so it doesn't
                 # block. we're not using a queue so we have to use a db
                 # timestamp
-              ensure
                 pipeline.update!(
                   claimed_for_advancing_at: nil,
                   last_advanced_at: Time.current,
-                  status: status
+                  status: status || "in_progress"
                 )
               end
             else
