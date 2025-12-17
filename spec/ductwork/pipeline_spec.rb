@@ -310,4 +310,27 @@ RSpec.describe Ductwork::Pipeline do
       expect(pipeline.parsed_definition["foo"]).to eq("bar")
     end
   end
+
+  describe "#complete!" do
+    let(:pipeline) { create(:pipeline, status: "in_progress") }
+
+    it "sets the status and completed at timestamp" do
+      expect do
+        pipeline.complete!
+      end.to change(pipeline, :status).to("completed")
+        .and change(pipeline, :completed_at).to be_within(1.second).of(Time.current)
+    end
+
+    it "logs" do
+      allow(Ductwork.logger).to receive(:info).and_call_original
+
+      pipeline.complete!
+
+      expect(Ductwork.logger).to have_received(:info).with(
+        msg: "Pipeline completed",
+        pipeline_id: pipeline.id,
+        role: :pipeline_advancer
+      )
+    end
+  end
 end

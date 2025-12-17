@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.12.0] (Unreleased)
+
+- chore: extract `Ductwork::Pipeline#complete!` method
+
 ## [0.11.2]
 
 - fix: join error backtrace lines before persisting in `text` column

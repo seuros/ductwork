@@ -114,6 +114,16 @@ module Ductwork
       @parsed_definition ||= JSON.parse(definition).with_indifferent_access
     end
 
+    def complete!
+      update!(status: :completed, completed_at: Time.current)
+
+      Ductwork.logger.info(
+        msg: "Pipeline completed",
+        pipeline_id: id,
+        role: :pipeline_advancer
+      )
+    end
+
     private
 
     def create_step_and_enqueue_job(edge:, input_arg:, node: nil)
@@ -148,13 +158,7 @@ module Ductwork
                   .exists?
 
       if !remaining
-        update!(status: :completed, completed_at: Time.current)
-
-        Ductwork.logger.info(
-          msg: "Pipeline completed",
-          pipeline_id: id,
-          role: :pipeline_advancer
-        )
+        complete!
       end
     end
 
