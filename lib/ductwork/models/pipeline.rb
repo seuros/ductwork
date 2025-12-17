@@ -219,7 +219,7 @@ module Ductwork
       end
 
       if too_many
-        halted!
+        halt!
       else
         edge[:to].each do |node|
           input_arg = Ductwork::Job.find_by(step_id:).return_value
@@ -265,7 +265,7 @@ module Ductwork
       max_depth = Ductwork.configuration.steps_max_depth(pipeline: klass, step: next_klass)
 
       if max_depth != -1 && return_value.count > max_depth
-        halted!
+        halt!
       else
         Array(return_value).each do |input_arg|
           create_step_and_enqueue_job(edge:, input_arg:)
