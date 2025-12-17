@@ -3,6 +3,7 @@
 require "active_record"
 require "active_support"
 require "action_controller"
+require "action_view"
 require "logger"
 require "rails/engine"
 require "securerandom"
