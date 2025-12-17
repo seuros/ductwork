@@ -2,6 +2,7 @@
 
 ## [0.12.0] (Unreleased)
 
+- feat: create `Ductwork::Pipeline#halt!` method
 - chore: extract `Ductwork::Pipeline#complete!` method
 
 ## [0.11.2]

@@ -124,6 +124,16 @@ module Ductwork
       )
     end
 
+    def halt!
+      halted!
+
+      Ductwork.logger.info(
+        msg: "Pipeline halted",
+        pipeline_id: id,
+        pipeline_klass: klass
+      )
+    end
+
     private
 
     def create_step_and_enqueue_job(edge:, input_arg:, node: nil)

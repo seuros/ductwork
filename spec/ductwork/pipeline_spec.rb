@@ -333,4 +333,26 @@ RSpec.describe Ductwork::Pipeline do
       )
     end
   end
+
+  describe "#halt!" do
+    let(:pipeline) { create(:pipeline, status: "in_progress") }
+
+    it "sets the status" do
+      expect do
+        pipeline.halt!
+      end.to change(pipeline, :status).to("halted")
+    end
+
+    it "logs" do
+      allow(Ductwork.logger).to receive(:info).and_call_original
+
+      pipeline.halt!
+
+      expect(Ductwork.logger).to have_received(:info).with(
+        msg: "Pipeline halted",
+        pipeline_id: pipeline.id,
+        pipeline_klass: pipeline.klass
+      )
+    end
+  end
 end
