@@ -343,6 +343,12 @@ RSpec.describe Ductwork::Pipeline do
       end.to change(pipeline, :status).to("halted")
     end
 
+    it "updates the halted at timestamp" do
+      expect do
+        pipeline.halt!
+      end.to change(pipeline, :halted_at).from(nil).to be_within(1.second).of(Time.current)
+    end
+
     it "logs" do
       allow(Ductwork.logger).to receive(:info).and_call_original
 

@@ -2,6 +2,7 @@
 
 ## [0.13.0] (Unreleased)
 
+- feat: add and populate `ductwork_pipelines.halted_at` timestamp
 - fix: fix style violations
 - fix: remove `config/ductwork.yml` test file after each test run
 - feat: mount rails engine in routes file with install generator

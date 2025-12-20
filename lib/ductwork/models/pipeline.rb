@@ -125,7 +125,7 @@ module Ductwork
     end
 
     def halt!
-      halted!
+      update!(status: :halted, halted_at: Time.current)
 
       Ductwork.logger.info(
         msg: "Pipeline halted",
