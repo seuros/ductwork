@@ -2,6 +2,7 @@
 
 ## [0.13.0] (Unreleased)
 
+- feat: mount rails engine in routes file with install generator
 - feat: implement a basic web dashboard
 - feat: isolate `Ductwork` namespace - this is in prep for a web dashboard
 

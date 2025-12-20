@@ -13,6 +13,8 @@ module Ductwork
       template "config/ductwork.yml"
       template "bin/ductwork"
 
+      chmod "bin/ductwork", 0o755 & ~File.umask, verbose: false
+
       migration_template "db/create_ductwork_pipelines.rb",
                          "db/migrate/create_ductwork_pipelines.rb"
       migration_template "db/create_ductwork_steps.rb",
@@ -30,7 +32,10 @@ module Ductwork
       migration_template "db/create_ductwork_processes.rb",
                          "db/migrate/create_ductwork_processes.rb"
 
-      chmod "bin/ductwork", 0o755 & ~File.umask, verbose: false
+      route <<~ROUTE
+        # This mounts the web dashboard. It is recommended to add authentication around it.
+        mount Ductwork::Engine, at: "/ductwork"
+      ROUTE
     end
   end
 end
