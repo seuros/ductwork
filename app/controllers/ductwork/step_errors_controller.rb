@@ -4,7 +4,11 @@ module Ductwork
   class StepErrorsController < Ductwork::ApplicationController
     def index
       @step_errors = query_step_errors
-      @klasses = Ductwork::Result.failure.joins(execution: { job: :step }).group("ductwork_steps.klass").pluck("ductwork_steps.klass")
+      @klasses = Ductwork::Result
+                 .failure
+                 .joins(execution: { job: :step })
+                 .group("ductwork_steps.klass")
+                 .pluck("ductwork_steps.klass")
     end
 
     private

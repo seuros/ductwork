@@ -6,7 +6,7 @@ module Ductwork
 
     def query_pipelines
       Ductwork::Pipeline
-        .includes(steps: { job: { executions: :result }})
+        .includes(steps: { job: { executions: :result } })
         .then(&method(:filter_by_klass))
         .then(&method(:filter_by_status))
         .then(&method(:paginate))

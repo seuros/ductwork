@@ -2,6 +2,7 @@
 
 ## [0.13.0] (Unreleased)
 
+- fix: fix style violations
 - fix: remove `config/ductwork.yml` test file after each test run
 - feat: mount rails engine in routes file with install generator
 - feat: implement a basic web dashboard
