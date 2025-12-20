@@ -8,6 +8,17 @@ module Ductwork
       Ductwork.app_executor = app.executor
     end
 
+    initializer "ductwork.assets.precompile" do |app|
+      if app.config.respond_to?(:assets)
+        app.config.assets.precompile += %w[
+          ductwork/vendor/pico.min.css
+          ductwork/vendor/flexboxgrid.min.css
+          ductwork/application.css
+          ductwork/application.js
+        ]
+      end
+    end
+
     initializer "ductwork.configure" do
       Ductwork.configuration ||= Ductwork::Configuration.new
       Ductwork.logger ||= Ductwork::Configuration::DEFAULT_LOGGER

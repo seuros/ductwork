@@ -1,0 +1,105 @@
+<div>
+  <h1>All Pipelines</h1>
+
+  <div class="separate-content">
+    <div class="filter-group">
+      <span class="filter-group-item">Filters:</span>
+
+      <details class="dropdown filter-group-item">
+        <summary><%= params[:klass] || "Class" %></summary>
+        <ul>
+          <% @klasses.each do |klass| %>
+            <li>
+              <%= link_to(klass, pipelines_path(params.permit(:status).merge(klass: klass))) %>
+            </li>
+          <% end %>
+        </ul>
+      </details>
+
+      <details class="dropdown filter-group-item">
+        <summary><%= params[:status]&.gsub("_", "-") || "Status" %></summary>
+        <ul>
+          <% @statuses.each do |status| %>
+            <li>
+              <%= link_to(status.gsub("_", "-"), pipelines_path(params.permit(:klass).merge(status:))) %>
+            </li>
+          <% end %>
+        </ul>
+      </details>
+
+      <%= link_to("Clear", pipelines_path) %>
+    </div>
+
+    <div role="group" style="width: auto;">
+      <button <%= first_page? && "disabled" %> data-href="<%= previous_page_path %>">
+        <%= link_to(previous_page_path, class: "stealthy-link") do %>
+          &larr;
+        <% end %>
+      </button>
+      <button data-href="<%= next_page_path %>">
+        &rarr;
+      </button>
+    </div>
+  </div>
+
+  <table class="striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Class</th>
+        <th>Status</th>
+        <th>Errors</th>
+        <th>Started At</th>
+        <th>Runtime</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @pipelines.each do |pipeline| %>
+        <tr class="row-link" data-href="<%= pipeline_path(pipeline.id) %>">
+          <td>
+            <code><%= pipeline.id %></code>
+          </td>
+          <td>
+            <code><%= pipeline.klass %></code>
+          </td>
+          <td>
+            <div class="status-pill <%= pipeline.status %>">
+              <%= pipeline.status.gsub("_", "-") %>
+            </div>
+          </td>
+          <td>
+            <%
+              count = Ductwork::Result
+                      .joins(execution: { job: { step: :pipeline }})
+                      .failure
+                      .where(ductwork_pipelines: { id: pipeline.id })
+                      .count
+            %>
+            <% if count.zero? %>
+              0
+            <% else %>
+              <div class="errors">
+                <%= image_tag("ductwork/octagon-x.svg", class: "icon") %>
+                <%= count %>
+              </div>
+            <% end %>
+          </td>
+          <td>
+            <div class="tight-timestamp">
+              <%= pipeline.started_at.iso8601(3) %>
+            </div>
+          </td>
+          <td>
+            <% if pipeline.completed_at.nil? %>
+              <div data-started-at=<%= pipeline.started_at.iso8601 %>>
+                <span id="elapsed-timer">0h 0m 0s</span>
+              </div>
+            <% else %>
+              <%= formatted_time_distance(pipeline.started_at, pipeline.completed_at) %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

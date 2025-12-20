@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ductwork Dashboard</title>
+
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Ductwork">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "ductwork/vendor/pico.min.css" %>
+    <%= stylesheet_link_tag "ductwork/vendor/flexboxgrid.min.css" %>
+    <%= stylesheet_link_tag "ductwork/application.css" %>
+
+    <%= javascript_include_tag "ductwork/application.js", type: "module" %>
+
+    <link rel="icon" href="<%= image_url("ductwork/logo.png") %>" type="image/png">
+    <link rel="apple-touch-icon" href="<%= image_url("ductwork/logo.png") %>" type="image/png">
+  </head>
+
+  <body>
+    <header class="sticky-header">
+      <nav class="container separate-content">
+        <ul>
+          <%= link_to(dashboard_path, class: "stealthy-link") do %>
+            <li><%= image_tag("ductwork/logo.png", class: "logo") %></li>
+            <li><h6 class="title">Ductwork</h6></li>
+          <% end %>
+        </ul>
+
+        <div>
+          <label>
+            Version
+          </label>
+          <div style="color: var(--pico-color);">
+            <%= Ductwork::VERSION %>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container">
+      <%= yield %>
+    </main>
+  </body>
+</html>

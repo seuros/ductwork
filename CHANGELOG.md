@@ -2,6 +2,7 @@
 
 ## [0.13.0] (Unreleased)
 
+- feat: implement a basic web dashboard
 - feat: isolate `Ductwork` namespace - this is in prep for a web dashboard
 
 ## [0.12.0]

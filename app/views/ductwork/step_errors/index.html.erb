@@ -1,0 +1,101 @@
+<div>
+  <h3>Step Errors</h3>
+
+  <div class="separate-content">
+    <div class="filter-group">
+      <span class="filter-group-item">Filters:</span>
+
+      <details class="dropdown filter-group-item">
+        <summary><%= params[:klass] || "Step Class" %></summary>
+        <ul>
+          <% @klasses.each do |klass| %>
+            <li>
+              <%= link_to(klass, step_errors_path(**params.permit(:status).merge(klass: klass))) %>
+            </li>
+          <% end %>
+        </ul>
+      </details>
+
+      <%= link_to("Clear", step_errors_path) %>
+    </div>
+
+    <div role="group" style="width: auto;">
+      <button <%= first_page? && "disabled" %> data-href="<%= previous_page_path %>">
+        <%= link_to(previous_page_path, class: "stealthy-link") do %>
+          &larr;
+        <% end %>
+      </button>
+      <button data-href="<%= next_page_path %>">
+        &rarr;
+      </button>
+    </div>
+  </div>
+  <table class="striped">
+    <thead>
+      <tr>
+        <th>Step ID</th>
+        <th>Step Class</th>
+        <th>Pipeline ID</th>
+        <th>Error Message</th>
+        <th>Error Backtrace</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @step_errors.each do |result| %>
+        <tr class="not-clickable">
+          <td>
+            <code>
+              <%= result.execution.job.step.id %>
+            </code>
+          </td>
+          <td>
+            <code>
+              <%= result.execution.job.step.klass %>
+            </code>
+          </td>
+          <td>
+            <code>
+              <%= link_to(result.execution.job.step.pipeline_id, pipeline_path(result.execution.job.step.pipeline_id)) %>
+            </code>
+          </td>
+          <td>
+            <code>
+              <%= [result.error_klass, result.error_message].join(": ") %>
+            </code>
+          </td>
+          <td>
+            <button data-open-modal="modal-<%= result.id %>" class="tight-timestamp secondary">
+              Open
+            </button>
+
+            <dialog id="modal-<%= result.id %>">
+              <article>
+                <header>
+                  <button aria-label="Close" rel="prev" data-close-modal="modal-<%= result.id %>"></button>
+                  <p>
+                  <strong>Error Backtrace</strong>
+                  </p>
+                </header>
+                <div>
+                  <h2>
+                    <%= result.error_klass %>
+                  </h2>
+                  <h5>
+                    <%= result.error_message %>
+                  </h5>
+                  <code>
+                    <%= result.error_backtrace.split("\n").each do |line| %>
+                      <div><%= line %></div>
+                    <% end %>
+                  </code>
+                </div>
+              </article>
+            </dialog>
+
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
