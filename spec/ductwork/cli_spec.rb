@@ -1,25 +1,55 @@
 # frozen_string_literal: true
 
-require "ductwork/cli"
-
 RSpec.describe Ductwork::CLI do
-  it "parses arguments, loads configuration, and starts the worker launcher" do
-    logger = instance_double(Logger, :level= => nil)
-    config = instance_double(
-      Ductwork::Configuration,
-      logger_level: 0,
-      logger_source: "default"
-    )
-    allow(Ductwork::Processes::SupervisorRunner).to receive(:start!)
-    allow(Ductwork::Configuration).to receive(:new).and_return(config)
-    allow(Ductwork).to receive(:logger=).and_call_original
-    allow(Ductwork).to receive(:logger).and_return(logger)
+  describe ".start!" do
+    let(:logger) { instance_double(Logger, :level= => nil) }
+    let(:config) do
+      instance_double(
+        Ductwork::Configuration,
+        logger_level: 0,
+        logger_source: "default"
+      )
+    end
 
-    described_class.start!([])
+    before do
+      allow(Ductwork::Processes::SupervisorRunner).to receive(:start!)
+      allow(Ductwork::Configuration).to receive(:new).and_return(config)
+      allow(Ductwork).to receive(:logger=).and_call_original
+      allow(Ductwork).to receive(:logger).and_return(logger)
+    end
 
-    expect(logger).to have_received(:level=).with(0)
-    expect(Ductwork).to have_received(:logger=).with(Ductwork::Configuration::DEFAULT_LOGGER)
-    expect(Ductwork::Configuration).to have_received(:new)
-    expect(Ductwork::Processes::SupervisorRunner).to have_received(:start!)
+    it "loads configuration" do
+      described_class.start!([])
+
+      expect(logger).to have_received(:level=).with(0)
+      expect(Ductwork).to have_received(:logger=).with(Ductwork::Configuration::DEFAULT_LOGGER)
+      expect(Ductwork::Configuration).to have_received(:new)
+    end
+
+    it "prints the banner" do
+      expect do
+        described_class.start!([])
+      end.to output(<<-BANNER).to_stdout
+  \e[1;37m
+  ██████╗ ██╗   ██╗ ██████╗████████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
+  ██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
+  ██║  ██║██║   ██║██║        ██║   ██║ █╗ ██║██║   ██║██████╔╝█████╔╝
+  ██║  ██║██║   ██║██║        ██║   ██║███╗██║██║   ██║██╔══██╗██╔═██╗
+  ██████╔╝╚██████╔╝╚██████╗   ██║   ╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗
+  ╚═════╝  ╚═════╝  ╚═════╝   ╚═╝    ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+   ▒▒▓  ▒ ░▒▓▒ ▒ ▒ ░ ░▒ ▒  ░  ▒ ░░   ░ ▓░▒ ▒  ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░▒ ▒▒ ▓▒
+    ░ ▒  ▒ ░░▒░ ░ ░   ░  ▒       ░      ▒ ░ ░    ░ ▒ ▒░   ░▒ ░ ▒░░ ░▒ ▒░
+     ░ ░  ░  ░░░ ░ ░ ░          ░        ░   ░  ░ ░ ░ ▒    ░░   ░ ░ ░░ ░
+        ░       ░     ░ ░                    ░        ░ ░     ░     ░  ░
+      ░               ░
+  \e[0m
+      BANNER
+    end
+
+    it "starts the worker launcher" do
+      described_class.start!([])
+
+      expect(Ductwork::Processes::SupervisorRunner).to have_received(:start!)
+    end
   end
 end

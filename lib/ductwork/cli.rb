@@ -16,6 +16,7 @@ module Ductwork
     def start!
       option_parser.parse!(args)
       auto_configure
+      puts banner
       supervisor_runner.start!
     end
 
@@ -51,6 +52,24 @@ module Ductwork
                           Ductwork::Configuration::DEFAULT_LOGGER
                         end
       Ductwork.logger.level = Ductwork.configuration.logger_level
+    end
+
+    def banner
+      <<-BANNER
+  \e[1;37m
+  ██████╗ ██╗   ██╗ ██████╗████████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
+  ██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
+  ██║  ██║██║   ██║██║        ██║   ██║ █╗ ██║██║   ██║██████╔╝█████╔╝
+  ██║  ██║██║   ██║██║        ██║   ██║███╗██║██║   ██║██╔══██╗██╔═██╗
+  ██████╔╝╚██████╔╝╚██████╗   ██║   ╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗
+  ╚═════╝  ╚═════╝  ╚═════╝   ╚═╝    ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+   ▒▒▓  ▒ ░▒▓▒ ▒ ▒ ░ ░▒ ▒  ░  ▒ ░░   ░ ▓░▒ ▒  ░ ▒░▒░▒░ ░ ▒▓ ░▒▓░▒ ▒▒ ▓▒
+    ░ ▒  ▒ ░░▒░ ░ ░   ░  ▒       ░      ▒ ░ ░    ░ ▒ ▒░   ░▒ ░ ▒░░ ░▒ ▒░
+     ░ ░  ░  ░░░ ░ ░ ░          ░        ░   ░  ░ ░ ░ ▒    ░░   ░ ░ ░░ ░
+        ░       ░     ░ ░                    ░        ░ ░     ░     ░  ░
+      ░               ░
+  \e[0m
+      BANNER
     end
 
     def supervisor_runner
