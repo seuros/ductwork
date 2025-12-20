@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.13.0] (Unreleased)
+## [0.13.0]
 
 - feat: print CLI banner on boot
 - feat: add and populate `ductwork_pipelines.halted_at` timestamp
