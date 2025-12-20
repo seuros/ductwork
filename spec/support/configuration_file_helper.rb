@@ -9,6 +9,8 @@ module ConfigurationFileHelper
         config_file.close
         config_file.unlink
       end
+
+      FileUtils.rm_f("config/ductwork.yml")
     end
   end
 
