@@ -208,7 +208,7 @@
                 </thead>
 
                 <tbody>
-                  <% step.job.executions.each do |execution| %>
+                  <% step.job.executions.order(:started_at).each do |execution| %>
                     <tr class="not-clickable">
                       <td>
                         <code>

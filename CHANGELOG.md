@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.13.1] (Unreleased)
+
+- fix: order step executions by started at
+
 ## [0.13.0]
 
 - feat: print CLI banner on boot
