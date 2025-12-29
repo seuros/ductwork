@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.14.0] (Unreleased)
+## [0.14.0]
 
 - feat: add support for ruby v4.0
 
