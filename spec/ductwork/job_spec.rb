@@ -145,7 +145,7 @@ RSpec.describe Ductwork::Job do
 
       job.execute(pipeline)
 
-      expect(MyFirstStep).to have_received(:build_for_execution).with(step, 1)
+      expect(MyFirstStep).to have_received(:build_for_execution).with(pipeline.id, 1)
       expect(user_step).to have_received(:execute)
     end
 

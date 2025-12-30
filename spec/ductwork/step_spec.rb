@@ -51,9 +51,8 @@ RSpec.describe Ductwork::Step do
 
     it "sets the pipeline id instance variable" do
       pipeline_id = 1
-      record = instance_double(described_class, pipeline_id:)
 
-      step = described_class.build_for_execution(record)
+      step = described_class.build_for_execution(pipeline_id)
 
       expect(step.instance_variable_get(:@pipeline_id)).to eq(pipeline_id)
     end

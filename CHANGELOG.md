@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.15.1] (Unreleased)
+
+- fix: pass pipeline ID directly to step builder method instead of passing step object
+
 ## [0.15.0]
 
 - chore: remove unnecessary transaction in job enqueueing method
