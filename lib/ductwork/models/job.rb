@@ -104,7 +104,7 @@ module Ductwork
         job_klass: klass
       )
       args = JSON.parse(input_args)["args"]
-      instance = Object.const_get(klass).new(args)
+      instance = Object.const_get(klass).build_for_execution(step, args)
       run = execution.create_run!(
         started_at: Time.current
       )

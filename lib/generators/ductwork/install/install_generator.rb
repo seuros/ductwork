@@ -31,6 +31,8 @@ module Ductwork
                          "db/migrate/create_ductwork_results.rb"
       migration_template "db/create_ductwork_processes.rb",
                          "db/migrate/create_ductwork_processes.rb"
+      migration_template "db/create_ductwork_tuples.rb",
+                         "db/migrate/create_ductwork_tuples.rb"
 
       route <<~ROUTE
         # This mounts the web dashboard. It is recommended to add authentication around it.

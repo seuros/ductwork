@@ -25,5 +25,20 @@ module Ductwork
          combine: "combine",
          expand: "expand",
          collapse: "collapse"
+
+    def self.build_for_execution(record, *args, **kwargs)
+      instance = allocate
+      instance.instance_variable_set(:@pipeline_id, record.pipeline_id)
+      instance.send(:initialize, *args, **kwargs)
+      instance
+    end
+
+    def pipeline_id
+      @pipeline_id || (@attributes && super)
+    end
+
+    def context
+      @_context ||= Ductwork::Context.new(pipeline_id)
+    end
   end
 end

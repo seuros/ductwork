@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MyHaltStep
+class MyHaltStep < Ductwork::Step
   def initialize(error)
     @error = error
   end

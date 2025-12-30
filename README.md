@@ -60,7 +60,7 @@ end
 
 ### 2. Define Steps
 
-Steps are Plain Old Ruby Objects (POROs) that implement two methods:
+Steps are Ruby objects that inherit from `Ductwork::Step` and implement two methods:
 - `initialize` - accepts parameters from the trigger call or previous step's return value
 - `execute` - performs the work and returns data for the next step
 
@@ -68,7 +68,7 @@ Steps live in `app/steps`:
 
 ```ruby
 # app/steps/users_requiring_enrichment.rb
-class UsersRequiringEnrichment
+class QueryUsersRequiringEnrichment < Ductwork::Step
   def initialize(days_outdated)
     @days_outdated = days_outdated
   end
@@ -90,7 +90,7 @@ Connect steps together using Ductwork's fluent interface DSL. The key principle:
 ```ruby
 class EnrichUserDataPipeline < Ductwork::Pipeline
   define do |pipeline|
-    pipeline.start(UsersRequiringEnrichment)       # Start with a single step
+    pipeline.start(QueryUsersRequiringEnrichment)  # Start with a single step
             .expand(to: LoadUserData)              # Fan out to multiple steps
             .divide(to: [FetchDataFromSourceA,     # Split into parallel branches
                          FetchDataFromSourceB])

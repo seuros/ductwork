@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.15.0] (Unreleased)
+
+- feat!: introduce pipeline Context - this is a BREAKING CHANGE because step classes now need to inherit from `Ductwork::Step`; they are no longer POROs
+
 ## [0.14.1]
 
 - fix: check if steps and pipelines directories exist before eager loading

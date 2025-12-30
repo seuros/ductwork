@@ -141,11 +141,11 @@ RSpec.describe Ductwork::Job do
 
     it "deserializes the step constant, initializes, and executes it" do
       user_step = instance_double(MyFirstStep, execute: nil)
-      allow(MyFirstStep).to receive(:new).and_return(user_step)
+      allow(MyFirstStep).to receive(:build_for_execution).and_return(user_step)
 
       job.execute(pipeline)
 
-      expect(MyFirstStep).to have_received(:new).with(1)
+      expect(MyFirstStep).to have_received(:build_for_execution).with(step, 1)
       expect(user_step).to have_received(:execute)
     end
 
@@ -192,7 +192,7 @@ RSpec.describe Ductwork::Job do
     it "does not mark the step as 'advancing' if the job execution raises" do
       user_step = instance_double(MyFirstStep)
       allow(user_step).to receive(:execute).and_raise(StandardError, "bad times")
-      allow(MyFirstStep).to receive(:new).and_return(user_step)
+      allow(MyFirstStep).to receive(:build_for_execution).and_return(user_step)
 
       expect do
         job.execute(pipeline)
@@ -203,7 +203,7 @@ RSpec.describe Ductwork::Job do
       before do
         user_step = instance_double(MyFirstStep)
         allow(user_step).to receive(:execute).and_raise(StandardError, "bad times")
-        allow(MyFirstStep).to receive(:new).and_return(user_step)
+        allow(MyFirstStep).to receive(:build_for_execution).and_return(user_step)
       end
 
       it "creates a failure result record" do

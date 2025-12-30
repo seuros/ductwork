@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MyFifthStep
+class MyFifthStep < Ductwork::Step
   def initialize(_input_arg); end
 
   def execute

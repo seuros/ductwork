@@ -20,6 +20,10 @@ Layout/MultilineMethodCallIndentation:
 Lint/EmptyClass:
   AllowComments: true
 
+Lint/MissingSuper:
+  AllowedParentClasses:
+    - Ductwork::Step
+
 Metrics/ClassLength:
   Max: 150
 
