@@ -23,23 +23,5 @@ module Ductwork
       Ductwork.configuration ||= Ductwork::Configuration.new
       Ductwork.logger ||= Ductwork::Configuration::DEFAULT_LOGGER
     end
-
-    initializer "ductwork.validate_definitions", after: :load_config_initializers do
-      config.after_initialize do
-        # Load steps and pipelines so definition validation runs and bugs
-        # can be caught simply by booting the app or running tests
-        loader = Rails.autoloaders.main
-        step_directory = Rails.root.join("app/steps")
-        pipeline_directory = Rails.root.join("app/pipelines")
-
-        if step_directory.exist?
-          loader.eager_load_dir(step_directory)
-        end
-
-        if pipeline_directory.exist?
-          loader.eager_load_dir(pipeline_directory)
-        end
-      end
-    end
   end
 end

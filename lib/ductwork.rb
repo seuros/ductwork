@@ -62,6 +62,26 @@ module Ductwork
       @defined_pipelines ||= []
     end
 
+    def validate!
+      step_directory = Rails.root.join("app/steps")
+      pipeline_directory = Rails.root.join("app/pipelines")
+      loader = if defined?(Rails.autoloaders)
+                 Rails.autoloaders.main
+               else
+                 Ductwork.loader
+               end
+
+      if step_directory.exist?
+        loader.eager_load_dir(step_directory)
+      end
+
+      if pipeline_directory.exist?
+        loader.eager_load_dir(pipeline_directory)
+      end
+
+      true
+    end
+
     private
 
     def add_lifecycle_hook(target, event, block)

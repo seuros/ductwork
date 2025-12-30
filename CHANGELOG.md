@@ -2,6 +2,7 @@
 
 ## [0.15.0] (Unreleased)
 
+- feat: expose pipeline and step classes validation method instead of running in a rails initializer
 - feat!: introduce pipeline Context - this is a BREAKING CHANGE because step classes now need to inherit from `Ductwork::Step`; they are no longer POROs
 
 ## [0.14.1]
