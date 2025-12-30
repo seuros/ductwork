@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.15.1] (Unreleased)
+## [0.15.1]
 
 - fix: pass pipeline ID directly to step builder method instead of passing step object
 
