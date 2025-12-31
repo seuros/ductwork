@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.16.0] (Unreleased)
+## [0.16.0]
 
 - feat!: allow `Pipeline.trigger` to accept arbitrary positional arguments - this is a BREAKING CHANGE as it changes the structure of how arguments are stored and passed between steps
 - feat: add RSpec testing helper for setting context state
