@@ -52,7 +52,7 @@ module Ductwork
         Ductwork.defined_pipelines << name.to_s
       end
 
-      def trigger(args)
+      def trigger(*args)
         if pipeline_definition.nil?
           raise DefinitionError, "Pipeline must be defined before triggering"
         end
@@ -78,7 +78,7 @@ module Ductwork
             to_transition: :start,
             started_at: Time.current
           )
-          Ductwork::Job.enqueue(step, args)
+          Ductwork::Job.enqueue(step, *args)
 
           p
         end

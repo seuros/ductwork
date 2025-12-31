@@ -67,7 +67,7 @@ module Ductwork
       end
     end
 
-    def self.enqueue(step, args)
+    def self.enqueue(step, *args)
       job = step.create_job!(
         klass: step.klass,
         started_at: Time.current,
@@ -100,7 +100,7 @@ module Ductwork
         job_klass: klass
       )
       args = JSON.parse(input_args)["args"]
-      instance = Object.const_get(klass).build_for_execution(step.pipeline_id, args)
+      instance = Object.const_get(klass).build_for_execution(step.pipeline_id, *args)
       run = execution.create_run!(
         started_at: Time.current
       )

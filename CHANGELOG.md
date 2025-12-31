@@ -2,6 +2,7 @@
 
 ## [0.16.0] (Unreleased)
 
+- feat!: allow `Pipeline.trigger` to accept arbitrary positional arguments - this is a BREAKING CHANGE as it changes the structure of how arguments are stored and passed between steps
 - feat: add RSpec testing helper for setting context state
 - feat: add RSpec testing helper for easily creating pipelines
 

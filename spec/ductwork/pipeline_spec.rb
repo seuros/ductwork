@@ -286,6 +286,14 @@ RSpec.describe Ductwork::Pipeline do
       expect(Ductwork::Job).to have_received(:enqueue).with(anything, [1, 2])
     end
 
+    it "correctly passes multiple positional arguments to the job" do
+      allow(Ductwork::Job).to receive(:enqueue)
+
+      klass.trigger(1, 2)
+
+      expect(Ductwork::Job).to have_received(:enqueue).with(anything, 1, 2)
+    end
+
     it "raises if pipeline not defined" do
       other_klass = Class.new(described_class) do
         def self.name
