@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.16.1] (Unreleased)
+
+- chore: remove unnecessary logging
+
 ## [0.16.0]
 
 - feat!: allow `Pipeline.trigger` to accept arbitrary positional arguments - this is a BREAKING CHANGE as it changes the structure of how arguments are stored and passed between steps
