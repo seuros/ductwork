@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.17.0] (Unreleased)
+## [0.17.0]
 
 - feat: assign step node names unique hex values in the pipeline definition
 - chore: remove unnecessary logging
