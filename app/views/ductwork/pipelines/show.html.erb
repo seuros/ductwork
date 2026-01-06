@@ -178,14 +178,22 @@
               <div>
                 <label>Input</label>
                 <code>
-                  <%= JSON.parse(step.job.input_args).dig("args", 0).inspect %>
+                  <% if step.job.input_args.present? %>
+                    <%= JSON.parse(step.job.input_args).dig("args", 0).inspect %>
+                  <% else %>
+                    no value
+                  <% end %>
                 </code>
               </div>
 
               <div>
                 <label>Output</label>
                 <code>
-                  <%= JSON.parse(step.job.output_payload)["payload"].inspect %>
+                  <% if step.job.output_payload.present? %>
+                    <%= JSON.parse(step.job.output_payload)["payload"].inspect %>
+                  <% else %>
+                    no value
+                  <% end %>
                 </code>
               </div>
 

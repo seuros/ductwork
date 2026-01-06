@@ -2,6 +2,7 @@
 
 ## [0.18.0] (Unreleased)
 
+- fix: show countdown for pipelines/steps scheduled in the future
 - feat: add input and output arguments to pipeline dashboard page
 - feat: add RSpec matcher for asserting pipeline context
 

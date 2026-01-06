@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateTimer() {
       const now = new Date();
-      const elapsed = Math.floor((now - startedAt) / 1000);
+      const elapsed = Math.floor(Math.abs(now - startedAt) / 1000);
 
       const hours = Math.floor(elapsed / 3600);
       const minutes = Math.floor((elapsed % 3600) / 60);
@@ -17,7 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const minutesStr = minutes == 0 ? '' : `${String(minutes)}m `;
       const secondsStr = seconds == 0 ? '' : `${String(seconds)}s`;
 
-      displayElement.textContent = hoursStr + minutesStr + secondsStr;
+      if (now > startedAt) {
+        displayElement.textContent = hoursStr + minutesStr + secondsStr;
+      } else {
+        displayElement.textContent = 'In ' + hoursStr + minutesStr + secondsStr;
+      }
     }
 
     updateTimer();
