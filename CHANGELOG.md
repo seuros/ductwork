@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.18.0] (Unreleased)
+## [0.18.0]
 
 - fix: show countdown for pipelines/steps scheduled in the future
 - feat: add input and output arguments to pipeline dashboard page
