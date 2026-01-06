@@ -27,16 +27,22 @@
       </div>
 
       <div>
+        <div>
+          <label>Runtime</label>
+          <span>
+            <% if @pipeline.completed_at.nil? %>
+              <div data-started-at=<%= @pipeline.started_at.iso8601 %>>
+                <span id="elapsed-timer">0h 0m 0s</span>
+              </div>
+            <% else %>
+              <%= formatted_time_distance(@pipeline.started_at, @pipeline.completed_at) %>
+            <% end %>
+          </span>
+        </div>
         <div class="metric-heading">
           <label>Triggered At</label>
           <span>
             <%= @pipeline.triggered_at.iso8601(3) %>
-          </span>
-        </div>
-        <div>
-          <label>Step Count</label>
-          <span>
-            <%= @pipeline.steps.count %>
           </span>
         </div>
       </div>
@@ -59,13 +65,13 @@
 
     <div style="margin-top: 1rem;">
       <label>Definition</label>
-      <code>
+      <code style="width: 100%;">
         <%= @pipeline.parsed_definition %>
       </code>
     </div>
   </article>
 
-  <h3>Steps</h3>
+  <h3>Steps (<%= @pipeline.steps.count %>)</h3>
 
   <div class="separate-content">
     <div class="filter-group">
@@ -129,6 +135,13 @@
               </div>
 
               <div>
+                <label>Class</label>
+                <code>
+                  <%= step.klass %>
+                </code>
+              </div>
+
+              <div>
                 <label>Transition</label>
                 <code>
                   <%= step.to_transition == "default" ? "chain" : step.to_transition %>
@@ -163,16 +176,23 @@
           <div>
             <div class="grid">
               <div>
-                <label>Node</label>
+                <label>Input</label>
                 <code>
-                  <%= step.node %>
+                  <%= JSON.parse(step.job.input_args).dig("args", 0).inspect %>
                 </code>
               </div>
 
               <div>
-                <label>Class</label>
+                <label>Output</label>
                 <code>
-                  <%= step.klass %>
+                  <%= JSON.parse(step.job.output_payload)["payload"].inspect %>
+                </code>
+              </div>
+
+              <div>
+                <label>Node</label>
+                <code>
+                  <%= step.node %>
                 </code>
               </div>
 
@@ -189,7 +209,6 @@
                   <%= step.completed_at&.iso8601(3) %>
                 </div>
               </div>
-
             </div>
 
             <div style="margin-top: 1rem;">
