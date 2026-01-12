@@ -13,3 +13,7 @@ end
 appraise "rails-8.1" do
   gem "rails", "8.1.1"
 end
+
+appraise "rails-edge" do
+  gem "rails", git: "https://github.com/rails/rails", branch: "main"
+end

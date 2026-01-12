@@ -2,6 +2,7 @@
 
 ## [0.19.0] (Unreleased)
 
+- feat: loosen rails version constraint to allow rails edge
 - feat: respect "role" configuration when booting - ie. run main process as supervisor, pipeline advancer, or job worker
 - feat: allow job worker runner to take a collection of pipelines and create workers for all configured pipelines - this will only happen when the "role" configuration is "worker" otherwise a process will be spun up for each pipeline
 - feat: add "role" configuration - to be used to set the role of the entire ductwork running instance
