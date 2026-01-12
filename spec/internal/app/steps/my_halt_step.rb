@@ -5,11 +5,7 @@ class MyHaltStep < Ductwork::Step
     @error = error
   end
 
-  def execute
-    puts "!" * 80
-    puts error
-    puts "!" * 80
-  end
+  def execute; end
 
   private
 

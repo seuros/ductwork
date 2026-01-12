@@ -35,7 +35,7 @@ RSpec.describe Ductwork::Testing do
 
     it "returns false when no pipelines are triggered" do
       expect do
-        puts
+        1 + 1
       end.not_to have_triggered_pipelines(MyPipeline, MySecondPipeline)
     end
   end

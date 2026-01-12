@@ -10,9 +10,9 @@ RSpec.describe Ductwork::DSL::DefinitionBuilder, "#divide" do
   end
 
   it "returns the builder instance when given a block" do
-    returned_builder = builder.start(MyFirstStep).divide(to: [MySecondStep, MyThirdStep]) do
-      puts
-    end
+    returned_builder = builder # rubocop:disable Lint/EmptyBlock
+                       .start(MyFirstStep)
+                       .divide(to: [MySecondStep, MyThirdStep]) {}
 
     expect(returned_builder).to eq(builder)
   end
