@@ -1,6 +1,6 @@
 # Ductwork Changelog
 
-## [0.19.0] (Unreleased)
+## [0.19.0]
 
 - chore: bump rails-related dependencies to v8.1.2
 - chore: remove ruby v3.2.9 from CI testing matrix - support is ending in March '26 but it's being removed now to better support edge rails
