@@ -4,6 +4,7 @@ module Ductwork
   class Configuration # rubocop:todo Metrics/ClassLength
     DEFAULT_ENV = :default
     DEFAULT_FILE_PATH = "config/ductwork.yml"
+    DEFAULT_FORKING = "default" # fork pipeline advancer and job workers
     DEFAULT_JOB_WORKER_COUNT = 5 # threads
     DEFAULT_JOB_WORKER_MAX_RETRY = 3 # attempts
     DEFAULT_JOB_WORKER_POLLING_TIMEOUT = 1 # second
@@ -46,6 +47,10 @@ module Ductwork
       r = config[:role] || DEFAULT_ROLE
       validate_role!(r)
       r
+    end
+
+    def forking
+      config[:forking] || DEFAULT_FORKING
     end
 
     def pipelines

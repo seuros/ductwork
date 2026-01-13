@@ -1,5 +1,9 @@
 # Ductwork Changelog
 
+## [0.20.0] (Unreleased)
+
+- feat: add "forking" configuration with default - this will be used to change the concurreny model on boot, specifically deciding if pipeline advancer and job workers will be forked or created as threads
+
 ## [0.19.0]
 
 - chore: bump rails-related dependencies to v8.1.2
