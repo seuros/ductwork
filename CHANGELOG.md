@@ -2,6 +2,7 @@
 
 ## [0.20.0] (Unreleased)
 
+- chore: change project ruby version to 4.0.1
 - feat: add "forking" configuration with default - this will be used to change the concurreny model on boot, specifically deciding if pipeline advancer and job workers will be forked or created as threads
 
 ## [0.19.0]
